@@ -27,7 +27,7 @@ const ProductDetail = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-800 rounded-xl shadow-lg p-6">
+      <div className="bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-300 dark:to-gray-800 rounded-xl shadow-lg p-6">
         <div className="flex flex-col md:flex-row items-center">
           {/* Imagen del producto */}
           {product.imageUrl && (
