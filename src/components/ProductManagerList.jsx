@@ -1,4 +1,3 @@
-
 import PropTypes from 'prop-types'; // Importa PropTypes para la validación
 
 const ProductManagerList = ({
@@ -15,7 +14,7 @@ const ProductManagerList = ({
       <ul>
         {products.map((product) => (
           <li key={product.id} className="mb-4 border-b pb-4">
-            <strong>{product.name}</strong> - ${product.price}
+            <strong>{product.name}</strong> - ${Number(product.price)}  {/* Asegúrate de que price sea número */}
             <br />
             Categoría: {product.category}
             <div className="flex mt-2">
@@ -76,17 +75,17 @@ ProductManagerList.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-      price: PropTypes.number.isRequired,
+      price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired, // Permitir string o number
       category: PropTypes.string,
       paused: PropTypes.bool,
-      imageUrls: PropTypes.arrayOf(PropTypes.string),
+      imageUrls: PropTypes.arrayOf(PropTypes.string), // array opcional de URLs
     })
   ).isRequired,
   startEditingProduct: PropTypes.func.isRequired,
   deleteProduct: PropTypes.func.isRequired,
   togglePauseProduct: PropTypes.func.isRequired,
   removeImage: PropTypes.func.isRequired,
-  editingProduct: PropTypes.object, // Puede ser null o un objeto
+  editingProduct: PropTypes.oneOfType([PropTypes.object, PropTypes.oneOf([null])]), // Puede ser un objeto o null
 };
 
 export default ProductManagerList;

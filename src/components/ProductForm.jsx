@@ -1,5 +1,4 @@
-
-import PropTypes from 'prop-types'; // Importamos PropTypes para la validación
+import PropTypes from "prop-types";
 
 const ProductForm = ({
   newProduct,
@@ -8,7 +7,7 @@ const ProductForm = ({
   categories,
   progress,
   onSubmit,
-  isEditing
+  isEditing,
 }) => {
   return (
     <div className="mb-4">
@@ -16,7 +15,7 @@ const ProductForm = ({
         type="text"
         name="name"
         placeholder="Nombre del producto"
-        value={newProduct.name}
+        value={newProduct.name || ""}
         onChange={handleInputChange}
         className="border border-gray-300 rounded p-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
@@ -24,7 +23,7 @@ const ProductForm = ({
         type="text"
         name="price"
         placeholder="Precio"
-        value={newProduct.price}
+        value={newProduct.price || ""} // Asegúrate de que siempre sea un string
         onChange={handleInputChange}
         className="border border-gray-300 rounded p-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
@@ -32,13 +31,21 @@ const ProductForm = ({
         type="text"
         name="description"
         placeholder="Descripción"
-        value={newProduct.description}
+        value={newProduct.description || ""}
+        onChange={handleInputChange}
+        className="border border-gray-300 rounded p-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <input
+        type="number"
+        name="stock"
+        placeholder="Cantidad en stock"
+        value={newProduct.stock !== undefined ? newProduct.stock : 0} // Asegura que siempre haya un valor
         onChange={handleInputChange}
         className="border border-gray-300 rounded p-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       <select
         name="category"
-        value={newProduct.category}
+        value={newProduct.category || ""}
         onChange={handleInputChange}
         className="border border-gray-300 rounded p-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
@@ -69,27 +76,27 @@ const ProductForm = ({
         onClick={onSubmit}
         className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-all w-full mt-4"
       >
-        {isEditing ? 'Guardar Cambios' : 'Agregar Producto'}
+        {isEditing ? "Guardar Cambios" : "Agregar Producto"}
       </button>
     </div>
   );
 };
 
-// Agregar validación de props con PropTypes
 ProductForm.propTypes = {
   newProduct: PropTypes.shape({
     name: PropTypes.string.isRequired,
-    price: PropTypes.string.isRequired,
+    price: PropTypes.string.isRequired, // Asegúrate de que price sea string
     description: PropTypes.string.isRequired,
     category: PropTypes.string.isRequired,
-    imageUrls: PropTypes.arrayOf(PropTypes.string).isRequired
+    stock: PropTypes.number.isRequired, // stock como número
+    imageUrls: PropTypes.arrayOf(PropTypes.string).isRequired,
   }).isRequired,
   handleInputChange: PropTypes.func.isRequired,
   handleImageFilesChange: PropTypes.func.isRequired,
   categories: PropTypes.arrayOf(PropTypes.string).isRequired,
   progress: PropTypes.number.isRequired,
   onSubmit: PropTypes.func.isRequired,
-  isEditing: PropTypes.bool.isRequired
+  isEditing: PropTypes.bool.isRequired,
 };
 
 export default ProductForm;

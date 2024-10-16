@@ -1,41 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   collection,
   addDoc,
   getDocs,
   doc,
   deleteDoc,
-  updateDoc
-} from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../firebase/firebaseConfig';
-import ProductForm from './ProductForm';
-import ProductList from './ProductManagerList'; // Cambiar el nombre del componente para evitar conflicto
+  updateDoc,
+} from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../firebase/firebaseConfig";
+import ProductForm from "./ProductForm";
+import ProductList from "./ProductManagerList"; // Cambiar el nombre del componente para evitar conflicto
 
 const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
-    name: '',
-    price: '',
-    description: '',
+    name: "",
+    price: "", // Manejado como string
+    description: "",
     imageUrls: [],
-    category: '',
-    paused: false
+    category: "",
+    stock: 0, // Asegúrate de que esté inicializado
+    paused: false,
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [progress, setProgress] = useState(0);
   const [editingProduct, setEditingProduct] = useState(null);
-  const categories = ['Laptops', 'Smartphones', 'Accesorios', 'Tablets'];
+  const categories = ["Laptops", "Smartphones", "Accesorios", "Tablets"];
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const querySnapshot = await getDocs(collection(db, 'products'));
+      const querySnapshot = await getDocs(collection(db, "products"));
       const productsData = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           ...data,
           id: doc.id,
-          price: parseFloat(data.price) // Asegurarse de que price sea un número
+          price: parseFloat(data.price), // Asegurarse de que price sea un número
         };
       });
       setProducts(productsData);
@@ -45,16 +46,22 @@ const Dashboard = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     setNewProduct((prevProduct) => ({
       ...prevProduct,
-      [name]: value
+      [name]:
+        name === "price"
+          ? String(value)
+          : name === "stock"
+          ? parseInt(value, 10) || 0
+          : value, // Asegura que stock sea un número
     }));
   };
 
   const handleImageFilesChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 4) {
-      alert('Solo puedes subir hasta 4 imágenes');
+      alert("Solo puedes subir hasta 4 imágenes");
     } else {
       setImageFiles(files);
     }
@@ -65,7 +72,7 @@ const Dashboard = () => {
       imageFiles.map(async (imageFile) => {
         const imageRef = ref(storage, `products/${imageFile.name}`);
         const uploadTask = uploadBytesResumable(imageRef, imageFile);
-        uploadTask.on('state_changed', (snapshot) => {
+        uploadTask.on("state_changed", (snapshot) => {
           const progressPercentage =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           setProgress(progressPercentage);
@@ -78,57 +85,78 @@ const Dashboard = () => {
   };
 
   const addProduct = async () => {
-    if (imageFiles.length === 0 || newProduct.category === '') {
-      alert('Por favor, selecciona al menos una imagen y una categoría');
+    if (
+      newProduct.name === "" ||
+      newProduct.price === "" ||
+      newProduct.stock === undefined ||
+      newProduct.category === ""
+    ) {
+      alert("Por favor, completa todos los campos requeridos");
       return;
     }
 
     try {
       const imageUrls = await uploadImages();
-      await addDoc(collection(db, 'products'), {
+      await addDoc(collection(db, "products"), {
         ...newProduct,
         imageUrls,
-        paused: false
+        paused: false,
       });
       setNewProduct({
-        name: '',
-        price: '',
-        description: '',
+        name: "",
+        price: "",
+        description: "",
         imageUrls: [],
-        category: '',
-        paused: false
+        category: "",
+        paused: false,
       });
       setImageFiles([]);
       setProgress(0);
     } catch (error) {
-      console.error('Error al agregar el producto:', error);
+      console.error("Error al agregar el producto:", error);
     }
   };
 
   const saveProductChanges = async () => {
+    // Validar que los campos requeridos tengan valores
+    if (!newProduct.name || !newProduct.price || newProduct.stock === undefined || !newProduct.category) {
+      alert('Por favor, completa todos los campos requeridos antes de guardar.');
+      return;
+    }
+  
     try {
       let imageUrls = newProduct.imageUrls;
       if (imageFiles.length > 0) {
         const newImageUrls = await uploadImages();
         imageUrls = [...imageUrls, ...newImageUrls];
       }
-      await updateDoc(doc(db, 'products', editingProduct.id), {
+  
+      // Convertir price a número antes de guardar
+      const updatedProduct = {
         ...newProduct,
+        price: Number(newProduct.price), // Convertir price a número
         imageUrls
-      });
-
+      };
+  
+      // Actualizar el producto en la base de datos
+      await updateDoc(doc(db, 'products', editingProduct.id), updatedProduct);
+  
+      // Actualizar la lista de productos en el estado
       setProducts(
         products.map((product) =>
           product.id === editingProduct.id
-            ? { ...product, ...newProduct, imageUrls }
+            ? { ...product, ...updatedProduct }
             : product
         )
       );
+  
+      // Limpiar los campos y el estado de edición
       setEditingProduct(null);
       setNewProduct({
         name: '',
         price: '',
         description: '',
+        stock: 0,  // Asegura que el stock se restablezca a 0
         imageUrls: [],
         category: '',
         paused: false
@@ -144,7 +172,7 @@ const Dashboard = () => {
   const removeImage = (imageUrl) => {
     setNewProduct((prevProduct) => ({
       ...prevProduct,
-      imageUrls: prevProduct.imageUrls.filter((url) => url !== imageUrl)
+      imageUrls: prevProduct.imageUrls.filter((url) => url !== imageUrl),
     }));
   };
 
@@ -152,33 +180,34 @@ const Dashboard = () => {
     setEditingProduct(product);
     setNewProduct({
       name: product.name,
-      price: product.price,
+      price: String(product.price), // Asegúrate de que price sea un string
       description: product.description,
       imageUrls: product.imageUrls || [],
-      category: product.category || '',
-      paused: product.paused || false
+      category: product.category || "",
+      stock: Number(product.stock) || 0, // Asegura que stock sea un número
+      paused: product.paused || false,
     });
   };
 
   const deleteProduct = async (id) => {
     try {
-      await deleteDoc(doc(db, 'products', id));
+      await deleteDoc(doc(db, "products", id));
       setProducts(products.filter((product) => product.id !== id));
     } catch (error) {
-      console.error('Error al eliminar el producto:', error);
+      console.error("Error al eliminar el producto:", error);
     }
   };
 
   const togglePauseProduct = async (id, paused) => {
     try {
-      await updateDoc(doc(db, 'products', id), { paused: !paused });
+      await updateDoc(doc(db, "products", id), { paused: !paused });
       setProducts(
         products.map((product) =>
           product.id === id ? { ...product, paused: !paused } : product
         )
       );
     } catch (error) {
-      console.error('Error al pausar el producto:', error);
+      console.error("Error al pausar el producto:", error);
     }
   };
 
@@ -201,7 +230,7 @@ const Dashboard = () => {
         startEditingProduct={startEditingProduct}
         deleteProduct={deleteProduct}
         togglePauseProduct={togglePauseProduct}
-        removeImage={removeImage} 
+        removeImage={removeImage}
         editingProduct={editingProduct}
       />
     </div>
