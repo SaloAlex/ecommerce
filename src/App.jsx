@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -6,38 +5,50 @@ import ProductList from './components/ProductList';
 import ProductDetail from './components/ProductDetail';
 import Cart from './components/Cart';
 import Dashboard from './components/Dashboard'; // Importa el Dashboard
+import { CartProvider } from './context/CartContext'; // Importa el contexto del carrito
 
 const App = () => {
-  const [cartItems, setCartItems] = useState([]); // Estado para los productos del carrito
 
-  // Función para agregar productos al carrito
-  const addToCart = (product) => {
-    setCartItems((prevItems) => {
-      const existingProduct = prevItems.find((item) => item.id === product.id);
+  // Función para pausar un producto (propia del Dashboard)
+  const onTogglePauseProduct = (productId) => {
+    console.log("Producto pausado: ", productId);
+    // Aquí puedes implementar la lógica para pausar o reactivar el producto
+  };
 
-      if (existingProduct) {
-        // Si el producto ya está en el carrito, incrementamos su cantidad
-        return prevItems.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      } else {
-        // Si no está en el carrito, lo agregamos con cantidad 1
-        return [...prevItems, { ...product, quantity: 1 }];
-      }
-    });
+  // Función para editar un producto (propia del Dashboard)
+  const onEditProduct = (productId) => {
+    console.log("Editar producto: ", productId);
+    // Aquí puedes implementar la lógica para editar el producto
+  };
+
+  // Función para eliminar un producto (propia del Dashboard)
+  const onDeleteProduct = (productId) => {
+    console.log("Eliminar producto: ", productId);
+    // Aquí puedes implementar la lógica para eliminar el producto
   };
 
   return (
-    <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<ProductList />} /> {/* Ya no pasamos props aquí */}
-        <Route path="/products/:id" element={<ProductDetail addToCart={addToCart} />} /> {/* Pasamos la función addToCart */}
-        <Route path="/cart" element={<Cart cartItems={cartItems} />} /> {/* Pasamos los productos del carrito al Cart */}
-        <Route path="/dashboard" element={<Dashboard />} /> {/* Ruta para el Dashboard */}
-      </Routes>
-      <Footer />
-    </Router>
+    <CartProvider>
+      <Router>
+        <Header />
+        <Routes>
+          <Route path="/" element={<ProductList />} /> {/* Ya no pasamos props aquí */}
+          <Route path="/products/:id" element={<ProductDetail />} /> {/* El botón "Agregar al carrito" ya usa el contexto */}
+          <Route path="/cart" element={<Cart />} /> {/* El carrito también usa el contexto */}
+          <Route
+            path="/dashboard"
+            element={
+              <Dashboard
+                onTogglePauseProduct={onTogglePauseProduct}
+                onEditProduct={onEditProduct}
+                onDeleteProduct={onDeleteProduct}
+              />
+            }
+          />
+        </Routes>
+        <Footer />
+      </Router>
+    </CartProvider>
   );
 };
 

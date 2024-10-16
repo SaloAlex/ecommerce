@@ -1,24 +1,10 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import axios from 'axios';
+import { CartContext } from '../context/CartContext'; // Importa el contexto del carrito
 
 const Cart = () => {
+  const { cartItems } = useContext(CartContext); // Usa el contexto para acceder a los productos del carrito
   const [loading, setLoading] = useState(false);
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      title: 'Producto 1',
-      quantity: 1,
-      currency_id: 'ARS',
-      unit_price: 1000,
-    },
-    {
-      id: 2,
-      title: 'Producto 2',
-      quantity: 2,
-      currency_id: 'ARS',
-      unit_price: 500,
-    }
-  ]);
 
   // Acceder a la clave API desde las variables de entorno
   const apiKey = import.meta.env.VITE_API_KEY;
@@ -27,10 +13,10 @@ const Cart = () => {
     setLoading(true);
     try {
       const items = cartItems.map((item) => ({
-        title: item.title,
+        title: item.name,
         quantity: Number(item.quantity),
-        currency_id: item.currency_id,
-        unit_price: item.unit_price,
+        currency_id: 'ARS',
+        unit_price: item.price,
       }));
 
       // Enviar los productos al backend
@@ -48,17 +34,8 @@ const Cart = () => {
     }
   };
 
-  // Función para actualizar la cantidad de un producto
-  const updateQuantity = (id, quantity) => {
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, quantity: Number(quantity) } : item
-      )
-    );
-  };
-
   // Calcular el total del carrito
-  const total = cartItems.reduce((acc, item) => acc + item.unit_price * item.quantity, 0);
+  const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
@@ -67,22 +44,30 @@ const Cart = () => {
 
         {/* Listado de productos en el carrito */}
         <div className="mb-4">
-          {cartItems.map((item) => (
-            <div key={item.id} className="mb-4">
-              <p className="text-lg font-semibold">{item.title}</p>
-              <p className="text-sm">Precio: ${item.unit_price}</p>
-              <div className="flex items-center">
-                <p className="mr-2">Cantidad:</p>
-                <input
-                  type="number"
-                  value={item.quantity}
-                  min="1"
-                  onChange={(e) => updateQuantity(item.id, e.target.value)}
-                  className="border border-gray-300 rounded w-16 p-1"
-                />
+          {cartItems.length === 0 ? (
+            <p>No hay productos en el carrito.</p>
+          ) : (
+            cartItems.map((item, index) => (
+              <div key={item.id || index} className="mb-4 flex items-start"> {/* Añadido || index como fallback */}
+                {/* Mostrar la imagen del producto si existe */}
+                {item.imageUrls && item.imageUrls.length > 0 && (
+                  <img
+                    src={item.imageUrls[0]} // Mostrar la primera imagen del producto
+                    alt={item.name}
+                    className="w-20 h-20 object-cover rounded-lg mr-4"
+                  />
+                )}
+
+                <div>
+                  <p className="text-lg font-semibold">{item.name}</p>
+                  <p className="text-sm">Precio: ${item.price}</p>
+                  <div className="flex items-center">
+                    <p className="mr-2">Cantidad: {item.quantity}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Mostrar el total */}

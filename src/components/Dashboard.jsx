@@ -18,7 +18,6 @@ const Dashboard = () => {
     fetchProducts();
   }, []);
 
-  // Manejar el cambio de valores en el formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewProduct((prevProduct) => ({
@@ -27,7 +26,6 @@ const Dashboard = () => {
     }));
   };
 
-  // Manejar la edición de un producto
   const startEditingProduct = (product) => {
     setEditingProduct(product);
     setNewProduct({
@@ -39,7 +37,6 @@ const Dashboard = () => {
     });
   };
 
-  // Función para agregar un producto
   const addProduct = async () => {
     if (imageFiles.length > 0) {
       try {
@@ -68,12 +65,10 @@ const Dashboard = () => {
     }
   };
 
-  // Función para guardar los cambios del producto editado
   const saveProductChanges = async () => {
     try {
       let imageUrls = newProduct.imageUrls;
 
-      // Si hay nuevas imágenes, las subimos
       if (imageFiles.length > 0) {
         const newImageUrls = await Promise.all(
           imageFiles.map(async (imageFile) => {
@@ -83,10 +78,9 @@ const Dashboard = () => {
             return imageUrl;
           })
         );
-        imageUrls = [...imageUrls, ...newImageUrls]; // Agregar nuevas imágenes a las existentes
+        imageUrls = [...imageUrls, ...newImageUrls];
       }
 
-      // Actualizar producto en Firestore
       await updateDoc(doc(db, 'products', editingProduct.id), {
         ...newProduct,
         imageUrls,
@@ -98,7 +92,6 @@ const Dashboard = () => {
         )
       );
 
-      // Limpiar los campos de edición
       setEditingProduct(null);
       setNewProduct({ name: '', price: '', description: '', imageUrls: [], paused: false });
       setImageFiles([]);
@@ -107,7 +100,6 @@ const Dashboard = () => {
     }
   };
 
-  // Función para eliminar un producto
   const deleteProduct = async (id) => {
     try {
       await deleteDoc(doc(db, 'products', id));
@@ -117,7 +109,6 @@ const Dashboard = () => {
     }
   };
 
-  // Función para pausar un producto
   const togglePauseProduct = async (id, paused) => {
     try {
       await updateDoc(doc(db, 'products', id), { paused: !paused });
@@ -142,7 +133,7 @@ const Dashboard = () => {
           placeholder="Nombre del producto"
           value={newProduct.name}
           onChange={handleInputChange}
-          className="border p-2 mb-2"
+          className="border border-gray-300 rounded p-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <input
           type="text"
@@ -150,7 +141,7 @@ const Dashboard = () => {
           placeholder="Precio"
           value={newProduct.price}
           onChange={handleInputChange}
-          className="border p-2 mb-2"
+          className="border border-gray-300 rounded p-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <input
           type="text"
@@ -158,55 +149,57 @@ const Dashboard = () => {
           placeholder="Descripción"
           value={newProduct.description}
           onChange={handleInputChange}
-          className="border p-2 mb-2"
+          className="border border-gray-300 rounded p-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <input
           type="file"
           multiple
           onChange={(e) => setImageFiles(Array.from(e.target.files))}
-          className="border p-2 mb-2"
+          className="border border-gray-300 rounded p-2 mb-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
 
         <button
           onClick={editingProduct ? saveProductChanges : addProduct}
-          className="bg-blue-500 text-white p-2"
+          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition-all w-full"
         >
           {editingProduct ? 'Guardar Cambios' : 'Agregar Producto'}
         </button>
       </div>
 
       <div>
-        <h3>Productos actuales:</h3>
+        <h3 className="text-2xl font-semibold mb-4">Productos actuales:</h3>
         <ul>
           {products.map((product) => (
-            <li key={product.id} className="mb-4">
+            <li key={product.id} className="mb-4 border-b pb-4">
               <strong>{product.name}</strong> - ${product.price}
               <br />
-              <div className="flex">
+              <div className="flex mt-2">
                 {product.imageUrls &&
                   product.imageUrls.map((url, index) => (
-                    <img key={index} src={url} alt={`Imagen ${index + 1}`} width="100" className="mr-2" />
+                    <img key={index} src={url} alt={`Imagen ${index + 1}`} width="100" className="mr-2 rounded shadow-md" />
                   ))}
               </div>
 
-              <button
-                onClick={() => startEditingProduct(product)}
-                className="bg-yellow-500 text-white p-2 mr-2"
-              >
-                Editar
-              </button>
-              <button
-                onClick={() => deleteProduct(product.id)}
-                className="bg-red-500 text-white p-2 mr-2"
-              >
-                Eliminar
-              </button>
-              <button
-                onClick={() => togglePauseProduct(product.id, product.paused)}
-                className="bg-gray-500 text-white p-2"
-              >
-                {product.paused ? 'Reactivar' : 'Pausar'}
-              </button>
+              <div className="mt-2">
+                <button
+                  onClick={() => startEditingProduct(product)}
+                  className="bg-yellow-500 text-white p-2 rounded mr-2 hover:bg-yellow-600 transition-all"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => deleteProduct(product.id)}
+                  className="bg-red-500 text-white p-2 rounded mr-2 hover:bg-red-600 transition-all"
+                >
+                  Eliminar
+                </button>
+                <button
+                  onClick={() => togglePauseProduct(product.id, product.paused)}
+                  className={`p-2 rounded text-white transition-all ${product.paused ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'}`}
+                >
+                  {product.paused ? 'Reactivar' : 'Pausar'}
+                </button>
+              </div>
             </li>
           ))}
         </ul>

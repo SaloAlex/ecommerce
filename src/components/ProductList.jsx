@@ -23,20 +23,17 @@ const ProductList = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.length > 0 ? (
           products.map((product) => (
-            <div key={product.id} className="border p-4 shadow rounded-lg bg-gray-500">
-              <h3 className="text-xl font-semibold mb-2 text-white">{product.name}</h3>
-              <p className="text-gray-200">Precio: ${product.price}</p>
-              {/* Mostrar todas las imágenes del producto */}
-              <div className="flex">
-                {product.imageUrls && product.imageUrls.map((url, index) => (
-                  <img
-                    key={index}
-                    src={url}
-                    alt={`Imagen ${index + 1}`}
-                    className="w-full h-auto mb-2 border rounded-lg"
-                  />
-                ))}
-              </div>
+            <div key={product.id} className="border p-4 shadow rounded-lg bg-gray-100">
+              <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
+              <p className="text-gray-700">Precio: ${product.price}</p>
+              {/* Mostrar solo la primera imagen del producto */}
+              {product.imageUrls && product.imageUrls.length > 0 && (
+                <img
+                  src={product.imageUrls[0]} // Muestra solo la primera imagen
+                  alt={`Imagen del producto ${product.name}`}
+                  className="w-full h-auto mb-2 border rounded-lg"
+                />
+              )}
 
               {/* Botón de 'Más Detalles' que redirige a ProductDetail */}
               <Link
