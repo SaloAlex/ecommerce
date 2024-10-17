@@ -1,10 +1,28 @@
-import { createContext, useState } from 'react';
-import PropTypes from 'prop-types'; // Importa PropTypes para la validación
+import { createContext, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      // Intenta cargar los productos del carrito desde localStorage
+      const storedCart = localStorage.getItem('cartItems');
+      return storedCart ? JSON.parse(storedCart) : [];
+    } catch (error) {
+      console.error("Error al cargar el carrito desde localStorage:", error);
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      // Guarda el carrito en localStorage cada vez que cambia
+      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+    } catch (error) {
+      console.error("Error al guardar el carrito en localStorage:", error);
+    }
+  }, [cartItems]);
 
   // Función para agregar un producto al carrito
   const addToCart = (product) => {
@@ -24,7 +42,10 @@ export const CartProvider = ({ children }) => {
   };
 
   // Función para vaciar el carrito
-  const clearCart = () => setCartItems([]);
+  const clearCart = () => {
+    setCartItems([]); // Limpia el estado
+    localStorage.removeItem('cartItems'); // Elimina del localStorage
+  };
 
   return (
     <CartContext.Provider value={{ cartItems, addToCart, clearCart }}>
@@ -33,7 +54,7 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-// Definir PropTypes para validar que children es requerido
+// Validación de PropTypes para el CartProvider
 CartProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };

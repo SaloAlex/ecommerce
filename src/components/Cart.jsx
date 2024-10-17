@@ -6,7 +6,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2'; // SweetAlert2
 
 const Cart = () => {
-  const { cartItems, clearCart } = useContext(CartContext); // Asegúrate de traer `clearCart`
+  const { cartItems, clearCart } = useContext(CartContext);
   const [loading, setLoading] = useState(false);
 
   const handleCheckout = async () => {
@@ -62,10 +62,8 @@ const Cart = () => {
         showConfirmButton: false,
       });
 
-      // Vaciar el carrito después de la compra exitosa
-      clearCart();
-
       setTimeout(() => {
+        clearCart(); // Limpiar el carrito después de la compra
         window.location.href = `https://www.mercadopago.com.ar/checkout/v1/redirect?preference-id=${id}`;
       }, 2000);
 
@@ -81,24 +79,7 @@ const Cart = () => {
     }
   };
 
-  const handleClearCart = () => {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: "¡Esta acción vaciará tu carrito de compras!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, vaciar',
-      cancelButtonText: 'Cancelar',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        clearCart();
-        Swal.fire('Carrito vaciado', 'Tu carrito ha sido vaciado.', 'success');
-      }
-    });
-  };
-
+  // Calcular el total basado en la cantidad de productos en el carrito
   const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
@@ -110,11 +91,11 @@ const Cart = () => {
             <p>No hay productos en el carrito.</p>
           ) : (
             cartItems.map((item) => (
-              <div key={item.id} className="mb-4">
+              <div key={item.id} className="mb-4"> {/* Usamos `item.id` como `key` */}
                 <p className="text-lg font-semibold">{item.name}</p>
-                <p className="text-sm">Precio: ${item.price}</p>
-                <p className="text-sm">Stock disponible: {item.stock}</p> {/* Mostrar stock disponible */}
+                <p className="text-sm">Precio unitario: ${item.price}</p>
                 <p className="text-sm">Cantidad en carrito: {item.quantity}</p>
+                <p className="text-sm">Subtotal: ${item.price * item.quantity}</p> {/* Mostrar subtotal por producto */}
                 {item.imageUrls && item.imageUrls.length > 0 && (
                   <img
                     src={item.imageUrls[0]} // Renderiza solo la primera imagen
@@ -127,27 +108,41 @@ const Cart = () => {
           )}
         </div>
 
-        <p className="text-xl font-bold mb-4">Total: ${total}</p>
+        <p className="text-xl font-bold mb-4">Total a pagar: ${total}</p> {/* Total del carrito basado en cantidades */}
 
-        <button
-          onClick={handleCheckout}
-          className={`w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded ${
-            loading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-          disabled={loading}
-        >
-          {loading ? 'Procesando...' : 'Pagar ahora'}
-        </button>
-
-        {/* Botón para vaciar el carrito */}
-        {cartItems.length > 0 && (
+        <div className="flex space-x-4">
           <button
-            onClick={handleClearCart}
-            className="w-full px-4 py-2 bg-red-500 text-white font-semibold rounded mt-4 hover:bg-red-600"
+            onClick={handleCheckout}
+            className={`w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={loading}
           >
-            Vaciar Carrito
+            {loading ? 'Procesando...' : 'Pagar ahora'}
           </button>
-        )}
+
+          <button
+            onClick={() => {
+              Swal.fire({
+                title: '¿Estás seguro?',
+                text: 'Esta acción vaciará tu carrito.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, vaciar carrito',
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  clearCart(); // Vaciar el carrito si se confirma la acción
+                  Swal.fire('Carrito vacío', 'Tu carrito ha sido vaciado.', 'success');
+                }
+              });
+            }}
+            className="w-full px-4 py-2 bg-red-500 text-white font-semibold rounded hover:bg-red-600"
+          >
+            Vaciar carrito
+          </button>
+        </div>
       </div>
     </div>
   );

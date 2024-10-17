@@ -6,7 +6,7 @@ import { CartContext } from '../context/CartContext';
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const { addToCart } = useContext(CartContext);
+  const { addToCart } = useContext(CartContext); // Usa el contexto para agregar productos al carrito
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState('');
@@ -19,9 +19,8 @@ const ProductDetail = () => {
 
       if (productSnap.exists()) {
         const productData = productSnap.data();
-        setProduct({ ...productData, id });
+        setProduct({ ...productData, id }); // Aquí agregamos el `id` al producto
         setSelectedImage(productData.imageUrls ? productData.imageUrls[0] : '');
-        setQuantity(1); // Reiniciar la cantidad seleccionada
       } else {
         console.error('No se encontró el producto.');
       }
@@ -35,8 +34,8 @@ const ProductDetail = () => {
 
   // Manejar la compra inmediata redirigiendo al carrito
   const handleBuyNow = () => {
-    addToCart({ ...product, quantity });
-    navigate('/cart');
+    addToCart({ ...product, quantity }); // Agregar el producto al carrito con la cantidad seleccionada
+    navigate('/cart');  // Redirigir al carrito
   };
 
   return (
@@ -75,28 +74,29 @@ const ProductDetail = () => {
             <p className="text-lg mb-4">Descripción: {product.description}</p>
             <p className="text-xl font-semibold mb-6">Precio: ${product.price}</p>
 
-            {/* Selector de cantidad basado en stock */}
+            {/* Selector de cantidad */}
             <div className="mb-4">
-              <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Cantidad</label>
+              <label htmlFor="quantity" className="block text-sm  font-medium">
+                Cantidad
+              </label>
               <select
                 id="quantity"
                 value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="mt-1 block text-black w-20 p-2 border border-gray-300 rounded-md"
+                onChange={(e) => setQuantity(parseInt(e.target.value))}
+                className="border rounded p-2 text-black font-semibold"
               >
-                {Array.from({ length: product.stock }, (_, i) => i + 1).map((num) => (
-                  <option key={num} value={num}>
-                    {num}
+                {[...Array(product.stock)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1}
                   </option>
                 ))}
               </select>
-              <p className="text-sm text-white mt-1">Stock disponible: {product.stock}</p>
             </div>
 
             <div className="flex space-x-4">
               {/* Botón de agregar al carrito */}
               <button
-                onClick={() => addToCart({ ...product, quantity })}
+                onClick={() => addToCart({ ...product, quantity })}  // Pasa la cantidad seleccionada
                 className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-full shadow-lg transition-transform transform hover:scale-105 hover:bg-blue-700 active:scale-95"
               >
                 Agregar al carrito
