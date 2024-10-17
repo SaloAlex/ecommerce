@@ -4,6 +4,9 @@ import ProductDetail from './components/ProductDetail'; // Detalles del producto
 import Cart from './components/Cart'; // Componente del carrito de compras
 import Dashboard from './components/Dashboard'; // Componente del dashboard
 import Home from './components/Home'; // El nuevo componente Home
+import Header from './components/Header'; // Importar el Header
+import Login from './components/Login'; // Importar el componente Login
+import Register from './components/Register'; // Importar el componente Register
 import { CartProvider } from './context/CartContext'; // Importa el contexto del carrito
 
 const App = () => {
@@ -11,23 +14,17 @@ const App = () => {
     <CartProvider>
       <div className="flex flex-col min-h-screen">
         <Router>
-          {/* El contenido principal, que crecerá para empujar el footer hacia abajo */}
+          <Header /> {/* Mantén el Header para todas las rutas */}
           <div className="flex-grow">
             <Routes>
-              {/* Ruta para la página de inicio (Home), que ahora incluye ProductList */}
               <Route path="/" element={<Home />} />
-
-              {/* Ruta para ver los detalles de un producto */}
               <Route path="/products/:id" element={<ProductDetail />} />
-
-              {/* Ruta para el carrito de compras */}
               <Route path="/cart" element={<Cart />} />
-
-              {/* Ruta para el dashboard de administración */}
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/login" element={<Login />} /> {/* Ruta para el login */}
+              <Route path="/register" element={<Register />} /> {/* Ruta para el registro */}
             </Routes>
           </div>
-          {/* Footer en la parte inferior */}
           <Footer />
         </Router>
       </div>

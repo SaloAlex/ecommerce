@@ -1,20 +1,23 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useContext } from 'react';
-import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore'; // arrayUnion para agregar valoraciones
+import { doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { CartContext } from '../context/CartContext';
-import { FaStar } from 'react-icons/fa'; // Íconos de estrellas
-import { FaShareAlt, FaHeart } from 'react-icons/fa'; // Iconos para compartir y favoritos
-import Swal from 'sweetalert2'; // Para alertas
+import { FaStar } from 'react-icons/fa';
+import { FaShareAlt, FaHeart } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import { getAuth } from 'firebase/auth'; // Para obtener la información del usuario autenticado
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const { addToCart } = useContext(CartContext); // Usa el contexto para agregar productos al carrito
+  const { addToCart } = useContext(CartContext);
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState('');
-  const [quantity, setQuantity] = useState(1); // Estado para la cantidad seleccionada
-  const [hover, setHover] = useState(null); // Estado para hover sobre estrellas
+  const [quantity, setQuantity] = useState(1);
+  const [hover, setHover] = useState(null);
+  const auth = getAuth(); // Instancia de autenticación de Firebase
+  const currentUser = auth.currentUser; // Información del usuario autenticado
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -23,7 +26,7 @@ const ProductDetail = () => {
 
       if (productSnap.exists()) {
         const productData = productSnap.data();
-        setProduct({ ...productData, id }); // Aquí agregamos el `id` al producto
+        setProduct({ ...productData, id });
         setSelectedImage(productData.imageUrls ? productData.imageUrls[0] : '');
       } else {
         console.error('No se encontró el producto.');
@@ -41,25 +44,41 @@ const ProductDetail = () => {
     ? product.ratings.reduce((a, b) => a + b, 0) / product.ratings.length
     : 0;
 
+  // Verificar si el usuario ya ha valorado el producto
+  const hasUserRated = product.ratedBy && product.ratedBy.includes(currentUser?.uid);
+
   // Manejar la compra inmediata redirigiendo al carrito
   const handleBuyNow = () => {
-    addToCart({ ...product, quantity }); // Agregar el producto al carrito con la cantidad seleccionada
-    navigate('/cart');  // Redirigir al carrito
+    addToCart({ ...product, quantity });
+    navigate('/cart');
   };
 
   // Función para calificar el producto
   const handleRating = async (newRating) => {
+    if (hasUserRated) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Ya has valorado este producto',
+        text: 'Solo puedes valorar un producto una vez.',
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
     const productRef = doc(db, 'products', id);
 
     try {
       await updateDoc(productRef, {
         ratings: arrayUnion(newRating), // Agregar la nueva calificación al array
+        ratedBy: arrayUnion(currentUser.uid), // Guardar el ID del usuario que valoró
       });
 
       // Actualizar el estado local
       setProduct((prevProduct) => ({
         ...prevProduct,
         ratings: [...(prevProduct.ratings || []), newRating],
+        ratedBy: [...(prevProduct.ratedBy || []), currentUser.uid],
       }));
 
       Swal.fire({
@@ -90,7 +109,6 @@ const ProductDetail = () => {
     <div className="container mx-auto p-6">
       <div className="bg-gray-900 rounded-xl shadow-lg p-6">
         <div className="flex flex-col md:flex-row items-start">
-          {/* Imagen principal grande */}
           <div className="flex-1">
             {selectedImage && (
               <img
@@ -101,7 +119,6 @@ const ProductDetail = () => {
             )}
           </div>
 
-          {/* Thumbnails (Imágenes pequeñas) */}
           <div className="flex md:flex-col justify-center md:ml-6 space-x-4 md:space-x-0 md:space-y-4">
             {product.imageUrls && product.imageUrls.map((url, index) => (
               <img
@@ -116,11 +133,9 @@ const ProductDetail = () => {
             ))}
           </div>
 
-          {/* Detalles del producto */}
           <div className="flex-1 text-gray-100 md:ml-6">
             <h2 className="text-4xl font-bold text-pink-500 mb-4 neon-effect">{product.name}</h2>
 
-            {/* Indicador de stock */}
             <p className={`text-lg mb-4 ${product.stock > 10 ? 'text-green-500' : 'text-red-500'}`}>
               {product.stock > 10
                 ? `Stock disponible: ${product.stock}`
@@ -130,7 +145,6 @@ const ProductDetail = () => {
             <p className="text-lg mb-4 text-gray-300">Descripción: {product.description}</p>
             <p className="text-2xl font-semibold mb-6 text-blue-400">Precio: ${product.price}</p>
 
-            {/* Selector de cantidad */}
             <div className="mb-4">
               <label htmlFor="quantity" className="block text-sm font-medium text-gray-300">
                 Cantidad
@@ -150,15 +164,13 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex space-x-4 mb-4">
-              {/* Botón de agregar al carrito */}
               <button
-                onClick={() => addToCart({ ...product, quantity })}   // Pasa la cantidad seleccionada
+                onClick={() => addToCart({ ...product, quantity })}
                 className="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-full shadow-lg transition-transform transform hover:scale-105"
               >
                 Agregar al carrito
               </button>
 
-              {/* Botón de comprar */}
               <button
                 onClick={handleBuyNow}
                 className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-full shadow-lg transition-transform transform hover:scale-105"
@@ -167,7 +179,6 @@ const ProductDetail = () => {
               </button>
             </div>
 
-            {/* Botón de compartir */}
             <button
               onClick={handleShare}
               className="flex items-center space-x-2 text-blue-400 hover:text-pink-500 transition"
@@ -176,13 +187,11 @@ const ProductDetail = () => {
               <span>Compartir</span>
             </button>
 
-            {/* Botón de agregar a favoritos */}
             <button className="flex items-center space-x-2 text-blue-400 hover:text-pink-500 transition mt-4">
               <FaHeart />
               <span>Agregar a favoritos</span>
             </button>
 
-            {/* Calificación promedio */}
             <div className="mt-6">
               <p className="text-gray-300">Calificación promedio: {averageRating.toFixed(1)} / 5</p>
               <div className="flex space-x-1">
@@ -195,7 +204,6 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Calificación por parte del usuario */}
             <div className="mt-4">
               <p className="text-gray-300">Tu calificación:</p>
               <div className="flex space-x-1">
@@ -210,6 +218,10 @@ const ProductDetail = () => {
                 ))}
               </div>
             </div>
+
+            {hasUserRated && (
+              <p className="text-red-500 mt-2">Ya has valorado este producto.</p>
+            )}
           </div>
         </div>
       </div>

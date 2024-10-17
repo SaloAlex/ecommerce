@@ -66,24 +66,24 @@ const Cart = () => {
   const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">Carrito de Compras</h2>
-        <div className="mb-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 p-6">
+      <div className="bg-gray-800 shadow-lg rounded-lg p-10 w-full max-w-2xl">
+        <h2 className="text-4xl font-bold text-pink-500 neon-effect mb-6">Carrito de Compras</h2>
+        <div className="mb-6">
           {cartItems.length === 0 ? (
-            <p>No hay productos en el carrito.</p>
+            <p className="text-white text-xl">No hay productos en el carrito.</p>
           ) : (
             cartItems.map((item) => (
-              <div key={item.id} className="mb-4"> {/* Usamos `item.id` como `key` */}
-                <p className="text-lg font-semibold">{item.name}</p>
-                <p className="text-sm">Precio unitario: ${item.price}</p>
-                <p className="text-sm">Cantidad en carrito: {item.quantity}</p>
-                <p className="text-sm">Subtotal: ${item.price * item.quantity}</p> {/* Mostrar subtotal por producto */}
+              <div key={item.id} className="mb-6">
+                <p className="text-2xl font-semibold text-blue-400">{item.name}</p>
+                <p className="text-lg text-gray-300">Precio unitario: ${item.price}</p>
+                <p className="text-lg text-gray-300">Cantidad en carrito: {item.quantity}</p>
+                <p className="text-lg text-gray-300">Subtotal: ${item.price * item.quantity}</p>
                 {item.imageUrls && item.imageUrls.length > 0 && (
                   <img
                     src={item.imageUrls[0]} // Renderiza solo la primera imagen
                     alt={`Imagen de ${item.name}`}
-                    className="w-20 h-20 object-cover rounded-md"
+                    className="w-28 h-28 object-cover rounded-md mt-3"
                   />
                 )}
               </div>
@@ -91,13 +91,13 @@ const Cart = () => {
           )}
         </div>
 
-        <p className="text-xl font-bold mb-4">Total a pagar: ${total}</p> {/* Total del carrito basado en cantidades */}
+        <p className="text-2xl font-bold text-blue-400 mb-6">Total a pagar: ${total}</p>
 
-        <div className="flex space-x-4">
+        <div className="flex space-x-6">
           <button
             onClick={handleCheckout}
-            className={`w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded ${
-              loading ? 'opacity-50 cursor-not-allowed' : ''
+            className={`w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-full shadow-md ${
+              loading ? 'opacity-50 cursor-not-allowed' : 'hover:from-pink-600 hover:to-purple-600 transition-transform transform hover:scale-105'
             }`}
             disabled={loading}
           >
@@ -116,12 +116,12 @@ const Cart = () => {
                 confirmButtonText: 'Sí, vaciar carrito',
               }).then((result) => {
                 if (result.isConfirmed) {
-                  clearCart(); // Vaciar el carrito si se confirma la acción
+                  clearCart();
                   Swal.fire('Carrito vacío', 'Tu carrito ha sido vaciado.', 'success');
                 }
               });
             }}
-            className="w-full px-4 py-2 bg-red-500 text-white font-semibold rounded hover:bg-red-600"
+            className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-full shadow-md hover:from-red-600 hover:to-red-700 transition-transform transform hover:scale-105"
           >
             Vaciar carrito
           </button>
