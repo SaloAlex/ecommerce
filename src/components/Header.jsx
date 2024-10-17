@@ -26,25 +26,33 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-blue-500 p-4">
+    <header className="bg-gray-900 p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-white text-2xl font-bold">Mi E-commerce</h1>
+        {/* Título con efecto de neón */}
+        <h1 className="text-pink-500 text-3xl font-bold neon-effect">
+          TECNO&+
+        </h1>
+
         <nav>
-          <ul className="flex space-x-4">
+          <ul className="flex space-x-6">
             <li>
-              <Link to="/" className="text-white hover:underline">Inicio</Link>
+              <Link to="/" className="text-blue-500 hover:text-pink-500 transition duration-300">
+                Inicio
+              </Link>
             </li>
             <li>
-              <Link to="/products" className="text-white hover:underline">Productos</Link>
+              <Link to="/products" className="text-blue-500 hover:text-pink-500 transition duration-300">
+                Productos
+              </Link>
             </li>
             <li className="relative">
               <button
                 onClick={handleCartClick}
-                className="text-white hover:underline flex items-center"
+                className="text-blue-500 hover:text-pink-500 transition duration-300 flex items-center"
               >
                 <FaShoppingCart className="text-2xl" /> {/* Icono de carrito */}
                 {totalItems > 0 && (
-                  <span className="bg-black text-white rounded-full px-2 py-1 text-xs absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2">
+                  <span className="bg-pink-500 text-white rounded-full px-2 py-1 text-xs absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2">
                     {totalItems}
                   </span>
                 )}

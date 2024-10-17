@@ -17,17 +17,18 @@ const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
     name: "",
-    price: "", // Manejado como string
+    price: "",
     description: "",
     imageUrls: [],
     category: "",
-    stock: 0, // Asegúrate de que esté inicializado
+    stock: 0,
     paused: false,
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [progress, setProgress] = useState(0);
   const [editingProduct, setEditingProduct] = useState(null);
-  const categories = ["Laptops", "Smartphones", "Accesorios", "Tablets"];
+  const [searchTerm, setSearchTerm] = useState(""); // Estado para el buscador de productos
+  const categories = ["Laptops", "Smartphones", "Accesorios", "Tablets","Electrodomesticos"];
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -37,7 +38,7 @@ const Dashboard = () => {
         return {
           ...data,
           id: doc.id,
-          price: parseFloat(data.price), // Asegurarse de que price sea un número
+          price: parseFloat(data.price),
         };
       });
       setProducts(productsData);
@@ -47,7 +48,6 @@ const Dashboard = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     setNewProduct((prevProduct) => ({
       ...prevProduct,
       [name]:
@@ -63,9 +63,9 @@ const Dashboard = () => {
     const files = Array.from(e.target.files);
     if (files.length > 4) {
       Swal.fire({
-        icon: 'error',
-        title: 'Límite excedido',
-        text: 'Solo puedes subir hasta 4 imágenes.',
+        icon: "error",
+        title: "Límite excedido",
+        text: "Solo puedes subir hasta 4 imágenes.",
       });
     } else {
       setImageFiles(files);
@@ -97,9 +97,9 @@ const Dashboard = () => {
       newProduct.category === ""
     ) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Campos incompletos',
-        text: 'Por favor, completa todos los campos requeridos.',
+        icon: "warning",
+        title: "Campos incompletos",
+        text: "Por favor, completa todos los campos requeridos.",
       });
       return;
     }
@@ -123,15 +123,15 @@ const Dashboard = () => {
       setImageFiles([]);
       setProgress(0);
       Swal.fire({
-        icon: 'success',
-        title: 'Producto agregado',
-        text: 'El producto se ha agregado exitosamente.',
+        icon: "success",
+        title: "Producto agregado",
+        text: "El producto se ha agregado exitosamente.",
       });
     } catch (error) {
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Ocurrió un error al agregar el producto.',
+        icon: "error",
+        title: "Error",
+        text: "Ocurrió un error al agregar el producto.",
       });
       console.error("Error al agregar el producto:", error);
     }
@@ -140,9 +140,9 @@ const Dashboard = () => {
   const saveProductChanges = async () => {
     if (!newProduct.name || !newProduct.price || newProduct.stock === undefined || !newProduct.category) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Campos incompletos',
-        text: 'Por favor, completa todos los campos antes de guardar.',
+        icon: "warning",
+        title: "Campos incompletos",
+        text: "Por favor, completa todos los campos antes de guardar.",
       });
       return;
     }
@@ -160,7 +160,7 @@ const Dashboard = () => {
         imageUrls,
       };
 
-      await updateDoc(doc(db, 'products', editingProduct.id), updatedProduct);
+      await updateDoc(doc(db, "products", editingProduct.id), updatedProduct);
       setProducts(
         products.map((product) =>
           product.id === editingProduct.id
@@ -170,29 +170,29 @@ const Dashboard = () => {
       );
       setEditingProduct(null);
       setNewProduct({
-        name: '',
-        price: '',
-        description: '',
+        name: "",
+        price: "",
+        description: "",
         stock: 0,
         imageUrls: [],
-        category: '',
+        category: "",
         paused: false,
       });
       setImageFiles([]);
       setProgress(0);
 
       Swal.fire({
-        icon: 'success',
-        title: 'Cambios guardados',
-        text: 'El producto se ha actualizado exitosamente.',
+        icon: "success",
+        title: "Cambios guardados",
+        text: "El producto se ha actualizado exitosamente.",
       });
     } catch (error) {
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Ocurrió un error al guardar los cambios.',
+        icon: "error",
+        title: "Error",
+        text: "Ocurrió un error al guardar los cambios.",
       });
-      console.error('Error al guardar los cambios:', error);
+      console.error("Error al guardar los cambios:", error);
     }
   };
 
@@ -208,11 +208,11 @@ const Dashboard = () => {
     setEditingProduct(product);
     setNewProduct({
       name: product.name,
-      price: String(product.price), // Asegúrate de que price sea un string
+      price: String(product.price),
       description: product.description,
       imageUrls: product.imageUrls || [],
       category: product.category || "",
-      stock: Number(product.stock) || 0, // Asegura que stock sea un número
+      stock: Number(product.stock) || 0,
       paused: product.paused || false,
     });
   };
@@ -222,15 +222,15 @@ const Dashboard = () => {
       await deleteDoc(doc(db, "products", id));
       setProducts(products.filter((product) => product.id !== id));
       Swal.fire({
-        icon: 'success',
-        title: 'Producto eliminado',
-        text: 'El producto ha sido eliminado correctamente.',
+        icon: "success",
+        title: "Producto eliminado",
+        text: "El producto ha sido eliminado correctamente.",
       });
     } catch (error) {
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Ocurrió un error al eliminar el producto.',
+        icon: "error",
+        title: "Error",
+        text: "Ocurrió un error al eliminar el producto.",
       });
       console.error("Error al eliminar el producto:", error);
     }
@@ -246,19 +246,37 @@ const Dashboard = () => {
       );
     } catch (error) {
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Ocurrió un error al pausar el producto.',
+        icon: "error",
+        title: "Error",
+        text: "Ocurrió un error al pausar el producto.",
       });
       console.error("Error al pausar el producto:", error);
     }
   };
+
+  // Filtrar productos por el término de búsqueda
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto p-6">
       <h2 className="text-3xl font-bold mb-6">
         Dashboard - Gestión de productos
       </h2>
+
+      {/* Buscador de productos */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Buscar producto..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border rounded-lg p-2 w-full max-w-sm"
+        />
+      </div>
+
+      {/* Formulario de productos */}
       <ProductForm
         newProduct={newProduct}
         handleInputChange={handleInputChange}
@@ -268,14 +286,23 @@ const Dashboard = () => {
         onSubmit={editingProduct ? saveProductChanges : addProduct}
         isEditing={!!editingProduct}
       />
-      <ProductList
-        products={products}
-        startEditingProduct={startEditingProduct}
-        deleteProduct={deleteProduct}
-        togglePauseProduct={togglePauseProduct}
-        removeImage={removeImage}
-        editingProduct={editingProduct}
-      />
+
+      {/* Lista de productos agrupados por categoría */}
+      {categories.map((category) => (
+        <div key={category} className="mt-6">
+          <h3 className="text-lg font-semibold mb-3">{category}</h3>
+          <ProductList
+            products={filteredProducts.filter(
+              (product) => product.category === category
+            )}
+            startEditingProduct={startEditingProduct}
+            deleteProduct={deleteProduct}
+            togglePauseProduct={togglePauseProduct}
+            removeImage={removeImage}
+            editingProduct={editingProduct}
+          />
+        </div>
+      ))}
     </div>
   );
 };
