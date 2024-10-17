@@ -1,6 +1,4 @@
 import { useContext, useState } from 'react';
-import { updateDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase/firebaseConfig'; // Firebase config
 import { CartContext } from '../context/CartContext'; // Importa el contexto del carrito
 import axios from 'axios';
 import Swal from 'sweetalert2'; // SweetAlert2
@@ -20,21 +18,6 @@ const Cart = () => {
             icon: 'error',
             title: 'Error',
             text: `El producto ${item.name} no tiene un identificador válido.`,
-          });
-          setLoading(false);
-          return;
-        }
-
-        const productRef = doc(db, 'products', item.id);
-        const newStock = item.stock - item.quantity; // Calcular el nuevo stock
-
-        if (newStock >= 0) {
-          await updateDoc(productRef, { stock: newStock });
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Stock insuficiente',
-            text: `No hay suficiente stock de ${item.name}. Disponible: ${item.stock}`,
           });
           setLoading(false);
           return;

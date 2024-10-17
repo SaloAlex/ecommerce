@@ -1,6 +1,8 @@
 import express from 'express';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import cors from 'cors';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { db } from '../src/firebase/firebaseConfig.js'; // Asegúrate de que Firebase esté configurado
 
 const app = express();
 const port = 3000;
@@ -16,6 +18,7 @@ const client = new MercadoPagoConfig({
 
 app.use(express.json());
 
+// Endpoint para crear la preferencia de pago
 app.post('/create_preference', async (req, res) => {
   try {
     console.log('Received request body:', req.body);
@@ -55,10 +58,56 @@ app.post('/create_preference', async (req, res) => {
   }
 });
 
+// Endpoint para Webhook (notificaciones de Mercado Pago)
+app.post('/webhook', async (req, res) => {
+  try {
+    const { data } = req.body;
+    const paymentId = data.id; // ID del pago que se puede usar para verificar el estado
+
+    // Llamada a la API de Mercado Pago para obtener detalles del pago
+    const paymentInfo = await client.payment.findById(paymentId);
+
+    const paymentStatus = paymentInfo.body.status;
+
+    if (paymentStatus === 'approved') {
+      const items = req.body.items || [];
+
+      for (const item of items) {
+        const productRef = doc(db, 'products', item.id);
+        const productSnap = await getDoc(productRef);
+
+        if (productSnap.exists()) {
+          const currentStock = productSnap.data().stock;
+          const newStock = currentStock - item.quantity;
+
+          if (newStock >= 0) {
+            await updateDoc(productRef, { stock: newStock });
+            console.log(`Stock actualizado para el producto ${item.title}: ${newStock}`);
+          } else {
+            console.error(`Stock insuficiente para el producto ${item.title}`);
+          }
+        } else {
+          console.error(`Producto con id ${item.id} no encontrado.`);
+        }
+      }
+    }
+
+    res.sendStatus(200); // Confirmar recepción exitosa del webhook
+  } catch (error) {
+    console.error('Error procesando el webhook:', error);
+    res.status(500).json({
+      error: 'Error procesando el webhook',
+      details: error.message,
+    });
+  }
+});
+
+// Endpoints para el redireccionamiento después del pago
 app.get('/success', (req, res) => res.send("Pago exitoso"));
 app.get('/failure', (req, res) => res.send("Pago fallido"));
 app.get('/pending', (req, res) => res.send("Pago pendiente"));
 
+// Iniciar el servidor
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
 });
