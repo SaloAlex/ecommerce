@@ -7,7 +7,7 @@ const CategoryNavbar = ({ categories, onCategorySelect }) => {
         
         {/* Texto a la izquierda */}
         <h2 className="text-4xl font-bold text-blue-900">
-          ¡Nuestros <span className="text-pink-500 bg-purple-500 px-2 py-1 rounded">productos!</span>
+          ¡Nuestros <span className="text-pink-500 bg-gray-800 px-2 py-1 rounded">productos!</span>
         </h2>
         
         {/* Categorías a la derecha con fondo gris */}
@@ -17,7 +17,7 @@ const CategoryNavbar = ({ categories, onCategorySelect }) => {
             <li>
               <button
                 onClick={() => onCategorySelect('')}
-                className="text-blue-700 hover:text-white bg-gray-200 hover:bg-purple-500 px-4 py-2 rounded-lg transition duration-300 focus:outline-none"
+                className="text-white hover:text-white bg-gray-800 hover:bg-black px-4 py-2 rounded-lg transition duration-300 focus:outline-none"
               >
                 Todos
               </button>
@@ -28,7 +28,7 @@ const CategoryNavbar = ({ categories, onCategorySelect }) => {
               <li key={category}>
                 <button
                   onClick={() => onCategorySelect(category)}
-                  className="text-blue-700 hover:text-white bg-gray-200 hover:bg-purple-500 px-4 py-2 rounded-lg transition duration-300 focus:outline-none"
+                  className="text-white hover:text-white bg-gray-800 hover:bg-black px-4 py-2 rounded-lg transition duration-300 focus:outline-none"
                 >
                   {category}
                 </button>
