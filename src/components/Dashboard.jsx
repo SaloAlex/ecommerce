@@ -11,6 +11,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase/firebaseConfig";
 import ProductForm from "./ProductForm";
 import ProductList from "./ProductManagerList"; // Cambiar el nombre del componente para evitar conflicto
+import Swal from "sweetalert2"; // Importa SweetAlert
 
 const Dashboard = () => {
   const [products, setProducts] = useState([]);
@@ -54,14 +55,18 @@ const Dashboard = () => {
           ? String(value)
           : name === "stock"
           ? parseInt(value, 10) || 0
-          : value, // Asegura que stock sea un número
+          : value,
     }));
   };
 
   const handleImageFilesChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 4) {
-      alert("Solo puedes subir hasta 4 imágenes");
+      Swal.fire({
+        icon: 'error',
+        title: 'Límite excedido',
+        text: 'Solo puedes subir hasta 4 imágenes.',
+      });
     } else {
       setImageFiles(files);
     }
@@ -91,7 +96,11 @@ const Dashboard = () => {
       newProduct.stock === undefined ||
       newProduct.category === ""
     ) {
-      alert("Por favor, completa todos los campos requeridos");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos incompletos',
+        text: 'Por favor, completa todos los campos requeridos.',
+      });
       return;
     }
 
@@ -108,40 +117,50 @@ const Dashboard = () => {
         description: "",
         imageUrls: [],
         category: "",
+        stock: 0,
         paused: false,
       });
       setImageFiles([]);
       setProgress(0);
+      Swal.fire({
+        icon: 'success',
+        title: 'Producto agregado',
+        text: 'El producto se ha agregado exitosamente.',
+      });
     } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Ocurrió un error al agregar el producto.',
+      });
       console.error("Error al agregar el producto:", error);
     }
   };
 
   const saveProductChanges = async () => {
-    // Validar que los campos requeridos tengan valores
     if (!newProduct.name || !newProduct.price || newProduct.stock === undefined || !newProduct.category) {
-      alert('Por favor, completa todos los campos requeridos antes de guardar.');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos incompletos',
+        text: 'Por favor, completa todos los campos antes de guardar.',
+      });
       return;
     }
-  
+
     try {
       let imageUrls = newProduct.imageUrls;
       if (imageFiles.length > 0) {
         const newImageUrls = await uploadImages();
         imageUrls = [...imageUrls, ...newImageUrls];
       }
-  
-      // Convertir price a número antes de guardar
+
       const updatedProduct = {
         ...newProduct,
-        price: Number(newProduct.price), // Convertir price a número
-        imageUrls
+        price: Number(newProduct.price),
+        imageUrls,
       };
-  
-      // Actualizar el producto en la base de datos
+
       await updateDoc(doc(db, 'products', editingProduct.id), updatedProduct);
-  
-      // Actualizar la lista de productos en el estado
       setProducts(
         products.map((product) =>
           product.id === editingProduct.id
@@ -149,21 +168,30 @@ const Dashboard = () => {
             : product
         )
       );
-  
-      // Limpiar los campos y el estado de edición
       setEditingProduct(null);
       setNewProduct({
         name: '',
         price: '',
         description: '',
-        stock: 0,  // Asegura que el stock se restablezca a 0
+        stock: 0,
         imageUrls: [],
         category: '',
-        paused: false
+        paused: false,
       });
       setImageFiles([]);
       setProgress(0);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Cambios guardados',
+        text: 'El producto se ha actualizado exitosamente.',
+      });
     } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Ocurrió un error al guardar los cambios.',
+      });
       console.error('Error al guardar los cambios:', error);
     }
   };
@@ -193,7 +221,17 @@ const Dashboard = () => {
     try {
       await deleteDoc(doc(db, "products", id));
       setProducts(products.filter((product) => product.id !== id));
+      Swal.fire({
+        icon: 'success',
+        title: 'Producto eliminado',
+        text: 'El producto ha sido eliminado correctamente.',
+      });
     } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Ocurrió un error al eliminar el producto.',
+      });
       console.error("Error al eliminar el producto:", error);
     }
   };
@@ -207,6 +245,11 @@ const Dashboard = () => {
         )
       );
     } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Ocurrió un error al pausar el producto.',
+      });
       console.error("Error al pausar el producto:", error);
     }
   };
