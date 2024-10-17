@@ -96,7 +96,7 @@ const ProductDetail = () => {
             <div className="flex space-x-4">
               {/* Botón de agregar al carrito */}
               <button
-                onClick={() => addToCart({ ...product, quantity })}  // Pasa la cantidad seleccionada
+                onClick={() => addToCart({ ...product, quantity })}   // Pasa la cantidad seleccionada
                 className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-full shadow-lg transition-transform transform hover:scale-105 hover:bg-blue-700 active:scale-95"
               >
                 Agregar al carrito

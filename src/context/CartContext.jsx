@@ -28,15 +28,17 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product) => {
     setCartItems((prevItems) => {
       const existingProduct = prevItems.find((item) => item.id === product.id);
-
+  
       if (existingProduct) {
         // Si el producto ya está en el carrito, incrementamos su cantidad
         return prevItems.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id 
+            ? { ...item, quantity: item.quantity + product.quantity } // Aumentar la cantidad basada en lo seleccionado
+            : item
         );
       } else {
-        // Si no está en el carrito, lo agregamos con cantidad 1
-        return [...prevItems, { ...product, quantity: 1 }];
+        // Si no está en el carrito, lo agregamos con la cantidad seleccionada
+        return [...prevItems, { ...product, quantity: product.quantity }];
       }
     });
   };
