@@ -16,7 +16,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState('');
-  const [quantity] = useState(1); // Solo usamos el valor 1 por defecto
+  const [quantity] = useState(1);
   const [hover, setHover] = useState(null);
   const [shippingCost, setShippingCost] = useState(0);
   const [showShippingModal, setShowShippingModal] = useState(false);
@@ -110,69 +110,68 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-3x1"> {/* Ajustamos el ancho máximo */}
-      <div className="bg-gray-800 rounded-xl shadow-lg p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div className="container mx-auto p-6 max-w-7xl"> {/* Ajustamos el ancho máximo */}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-8"> {/* Configuramos las tres columnas */}
+    
+    {/* Columna izquierda - Galería de imágenes */}
+    <div className="bg-white p-4 rounded-md shadow-sm md:col-span-1">
+      <ProductImageGallery
+        imageUrls={product.imageUrls}
+        selectedImage={selectedImage}
+        onSelectImage={setSelectedImage}
+      />
+    </div>
         
-        {/* Columna izquierda - Galería de imágenes */}
-        <div className="col-span-1">
-          <ProductImageGallery
-            imageUrls={product.imageUrls}
-            selectedImage={selectedImage}
-            onSelectImage={setSelectedImage}
-          />
-        </div>
-        
-        {/* Columna central - Información del producto */}
-        <div className="col-span-2 md:col-span-1 ml-10">
-          <h1 className="text-3xl font-bold text-white mb-4">{product.name}</h1>
-          <p className="text-xl text-white mb-4">Precio: ${product.price}</p>
-          <p className={`text-md mb-4 ${product.stock > 10 ? 'text-green-500' : 'text-pink-500'}`}>
-            {product.stock > 10
-              ? `Stock disponible: ${product.stock}`
-              : `¡Quedan solo ${product.stock} unidades!`}
-          </p>
-          <p className="text-md text-white mb-4">{product.description}</p>
-          <ProductRating
-            averageRating={averageRating}
-            hasUserRated={hasUserRated}
-            hover={hover}
-            setHover={setHover}
-            handleRating={handleRating}
-          />
-        </div>
+    {/* Columna central - Información del producto */}
+    <div className="md:col-span-1 bg-white p-6 rounded-md shadow-sm">
+      <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
+      <p className="text-xl text-green-600 font-semibold mb-2">Precio: ${product.price}</p>
+      <p className="text-sm text-gray-500 mb-2">{product.description}</p>
+      <p className={`mb-4 ${product.stock > 10 ? 'text-green-500' : 'text-red-500'}`}>
+        {product.stock > 10
+          ? `Stock disponible: ${product.stock}`
+          : `¡Quedan solo ${product.stock} unidades!`}
+      </p>
 
-        {/* Columna derecha - Botones de acción */}
-        <div className="w-3/4 bg-white p-4 rounded-lg shadow-lg flex flex-col items-start">
-          <button
-            onClick={handleBuyNow}
-            className="w-full px-4 py-2 mb-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-lg shadow-lg transition-transform transform hover:scale-105"
-          >
-            Comprar ahora
-          </button>
-          <button
-            onClick={() => addToCart({ ...product, quantity })}
-            className="w-full px-4 py-2 mb-4 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-lg shadow-xl transition-transform transform hover:scale-105"
-          >
-            Agregar al carrito
-          </button>
-          <button
-            onClick={() => setShowShippingModal(true)}
-            className="w-xl px-4 py-2 mb-4 bg-gradient-to-r from-pink-300 to-purple-800 text-white font-bold rounded-lg shadow-xl transition-transform transform hover:scale-105"
-          >
-            Costo de Envío
-          </button>
+      <ProductRating
+        averageRating={averageRating}
+        hasUserRated={hasUserRated}
+        hover={hover}
+        setHover={setHover}
+        handleRating={handleRating}
+      />
+    </div>
 
-          <p className="text-lg text-gray-900 mt-4">Total (producto + envío): ${product.price + shippingCost}</p>
-        </div>
+        <div className="bg-gray-100 p-4 rounded-md shadow-sm flex flex-col md:col-span-1">
+      <button
+        onClick={handleBuyNow}
+        className="w-full mb-4 bg-purple-600 text-white py-2 rounded-md font-semibold hover:bg-purple-700"
+      >
+        Comprar ahora
+      </button>
+      <button
+        onClick={() => addToCart({ ...product, quantity })}
+        className="w-full mb-4 bg-gray-300 text-gray-900 py-2 rounded-md font-semibold hover:bg-gray-400"
+      >
+        Agregar al carrito
+      </button>
+      <button
+        onClick={() => setShowShippingModal(true)}
+        className="w-full mb-4 bg-purple-400 text-white py-2 rounded-md font-semibold hover:bg-purple-500"
+      >
+        Costo de Envío
+      </button>
+      <p className="text-lg text-gray-900 mt-4">Total: ${product.price + shippingCost}</p>
+    </div>
 
-        {/* Modal para calcular el costo de envío */}
-        {showShippingModal && (
-          <ShippingModal onClose={() => setShowShippingModal(false)}>
-            <ShippingCalculator
-              calculateShippingCost={calculateShippingCost}
-              onShippingAccepted={handleShippingAccepted}
-            />
-          </ShippingModal>
+  {/* Modal para calcular el costo de envío */}
+  {showShippingModal && (
+    <ShippingModal onClose={() => setShowShippingModal(false)}>
+      <ShippingCalculator
+        calculateShippingCost={calculateShippingCost}
+        onShippingAccepted={handleShippingAccepted}
+      />
+    </ShippingModal>
         )}
       </div>
     </div>
