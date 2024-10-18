@@ -9,7 +9,7 @@ const ProductRating = ({
   handleRating,
 }) => (
   <div className="mt-6">
-    <p className="text-gray-300">Calificación promedio: {averageRating.toFixed(1)} / 5</p>
+    <p className="text-gray-500">Calificación promedio: {averageRating.toFixed(1)} / 5</p>
     <div className="flex space-x-1">
       {[...Array(5)].map((_, i) => (
         <FaStar
@@ -20,7 +20,7 @@ const ProductRating = ({
     </div>
 
     <div className="mt-4">
-      <p className="text-gray-300">Tu calificación:</p>
+      <p className="text-gray-500">Tu calificación:</p>
       <div className="flex space-x-1">
         {[...Array(5)].map((_, i) => (
           <FaStar
