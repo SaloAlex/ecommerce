@@ -6,9 +6,8 @@ import { CartContext } from "../context/CartContext";
 import Swal from "sweetalert2";
 import { getAuth } from "firebase/auth";
 import ProductImageGallery from "./ProductImageGallery";
-import ShippingModal from "./ShippingModal";
-import ShippingCalculator from "./ShippingCalculator";
 import ProductRating from "./ProductRating";
+import ProductInfo from "./ProductInfo"; // Importar ProductInfo
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -16,10 +15,8 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState("");
-  const [quantity] = useState(1);
+  const [quantity, setQuantity] = useState(1); // Estado para manejar cantidad
   const [hover, setHover] = useState(null);
-  const [shippingCost, setShippingCost] = useState(0);
-  const [showShippingModal, setShowShippingModal] = useState(false);
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
@@ -51,17 +48,15 @@ const ProductDetail = () => {
     ? product.ratings.reduce((a, b) => a + b, 0) / product.ratings.length
     : 0;
 
-  const hasUserRated = product.ratedBy?.includes(currentUser?.uid);
+  const hasUserRated = currentUser ? product.ratedBy?.includes(currentUser.uid) : false;
 
   const handleBuyNow = () => {
     if (!product.id) {
       console.error('Error: El producto no tiene un ID válido.');
       return;
     }
-  
-    const totalCost = Number(product.price) + Number(shippingCost);
-    addToCart({ ...product, quantity, shippingCost, totalCost });
-  
+
+    addToCart({ ...product, quantity });
     navigate("/cart");
   };
 
@@ -103,51 +98,31 @@ const ProductDetail = () => {
     }
   };
 
-  const calculateShippingCost = (postalCode) => {
-    const shippingRates = {
-      1000: 300,
-      2000: 400,
-      3000: 500,
-      default: 600,
-    };
-
-    return shippingRates[postalCode] || shippingRates.default;
-  };
-
-  const handleShippingAccepted = (cost) => {
-    setShippingCost(cost);
-    setShowShippingModal(false);
-  };
-
   return (
     <div className="container mx-auto p-8 max-w-7xl">
-      {/* Unificamos todo dentro de un solo contenedor */}
-      <div className="bg-white p-8 rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-3 gap-8">
+      {/* Estructura de grid ajustada para hacer más grande cada componente */}
+      <div className="bg-white p-8 rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-2 gap-16">
+        
         {/* Columna izquierda - Galería de imágenes */}
         <div className="md:col-span-1">
           <ProductImageGallery
             imageUrls={product.imageUrls}
             selectedImage={selectedImage}
             onSelectImage={setSelectedImage}
+            className="w-full h-full object-cover" // Aumenta el tamaño de la imagen
           />
         </div>
 
-        {/* Columna central - Información del producto */}
-        <div className="md:col-span-1">
-          <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-          <p className="text-2xl text-green-600 font-semibold mb-4">
-            Precio: ${product.price}
-          </p>
-          <p className="text-lg text-gray-600 mb-4">{product.description}</p>
-          <p
-            className={`text-lg mb-4 ${
-              product.stock > 10 ? "text-green-500" : "text-red-500"
-            }`}
-          >
-            {product.stock > 10
-              ? `Stock disponible: ${product.stock}`
-              : `¡Quedan solo ${product.stock} unidades!`}
-          </p>
+        {/* Columna derecha - Información del producto, con borde, sombra y separación */}
+        <div className="md:col-span-1 ml-8 border border-gray-300 p-4 rounded-lg shadow-lg ">
+          <ProductInfo
+            product={product}
+            quantity={quantity}
+            setQuantity={setQuantity} // Permitir cambiar la cantidad
+            addToCart={addToCart}
+            handleBuyNow={handleBuyNow}
+            handleShare={() => Swal.fire("Compartir", "¡Producto compartido!", "info")}
+          />
 
           <ProductRating
             averageRating={averageRating}
@@ -157,35 +132,6 @@ const ProductDetail = () => {
             handleRating={handleRating}
           />
         </div>
-
-        {/* Columna derecha - Botones de acción */}
-        <div className="md:col-span-1 flex flex-col">
-          <button
-            onClick={handleBuyNow}
-            className="w-full mb-4 bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 text-lg"
-          >
-            Comprar ahora
-          </button>
-          <button
-            onClick={() => setShowShippingModal(true)}
-            className="w-full mb-4 bg-purple-400 text-white py-3 rounded-lg font-semibold hover:bg-purple-500 text-lg"
-          >
-            Costo de Envío
-          </button>
-          <p className="text-xl text-gray-900 mt-4">
-            Total: ${product.price + shippingCost}
-          </p>
-        </div>
-
-        {/* Modal para calcular el costo de envío */}
-        {showShippingModal && (
-          <ShippingModal onClose={() => setShowShippingModal(false)}>
-            <ShippingCalculator
-              calculateShippingCost={calculateShippingCost}
-              onShippingAccepted={handleShippingAccepted}
-            />
-          </ShippingModal>
-        )}
       </div>
     </div>
   );

@@ -1,82 +1,78 @@
 import PropTypes from 'prop-types';
 import { FaShareAlt, FaHeart } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 
 const ProductInfo = ({
   product,
-  quantity,
-  setQuantity,
-  addToCart,
   handleBuyNow,
-  handleShare,
-}) => (
-  <div className="flex-1 text-gray-100">
-    <h2 className="text-3xl font-bold text-pink-500 mb-3">{product.name}</h2>
-    
-    <p className={`text-base mb-3 ${product.stock > 10 ? 'text-green-500' : 'text-red-500'}`}>
-      {product.stock > 10
-        ? `Stock disponible: ${product.stock}`
-        : `¡Quedan solo ${product.stock} unidades!`}
-    </p>
+}) => {
+  const productUrl = `https://mi-ecommerce.com/product/${product.id}`; // Reemplaza con la URL real de tu producto
 
-    <p className="text-base mb-3 text-gray-300">Descripción: {product.description}</p>
-    <p className="text-xl font-semibold mb-4 text-blue-400">Precio: ${product.price}</p>
+  const shareProduct = () => {
+    // Verifica si el navegador soporta la Web Share API (disponible en dispositivos móviles)
+    if (navigator.share) {
+      navigator.share({
+        title: product.name,
+        text: `¡Mira este increíble producto: ${product.name}!`,
+        url: productUrl,
+      })
+        .then(() => console.log('Producto compartido exitosamente'))
+        .catch((error) => console.error('Error al compartir:', error));
+    } else {
+      // Si no está disponible, copia el enlace y muestra una alerta
+      navigator.clipboard.writeText(productUrl)
+        .then(() => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Enlace copiado',
+            text: 'El enlace del producto ha sido copiado al portapapeles.',
+          });
+        })
+        .catch((error) => console.error('Error al copiar el enlace:', error));
+    }
+  };
 
-    <div className="mb-3">
-      <label htmlFor="quantity" className="block text-sm font-medium text-gray-300">
-        Cantidad
-      </label>
-      <select
-        id="quantity"
-        value={quantity}
-        onChange={(e) => setQuantity(parseInt(e.target.value))}
-        className="border rounded p-2 text-black font-semibold w-24"
-      >
-        {[...Array(product.stock)].map((_, i) => (
-          <option key={i + 1} value={i + 1}>
-            {i + 1}
-          </option>
-        ))}
-      </select>
-    </div>
+  return (
+    <div className="flex-1 text-gray-100">
+      <h2 className="text-3xl font-bold text-black mb-3">{product.name}</h2>
 
-    <div className="flex space-x-3 mb-3">
+      <p className={`text-base mb-3 ${product.stock > 10 ? 'text-green-500' : 'text-red-500'}`}>
+        {product.stock > 10
+          ? `Stock disponible: ${product.stock}`
+          : `¡Quedan solo ${product.stock} unidades!`}
+      </p>
+
+      <p className="text-base mb-3 text-gray-500">Descripción: {product.description}</p>
+      <p className="text-xl font-semibold mb-4 text-black">Precio: ${product.price}</p>
+
+      <div className="flex space-x-3 mb-3">
+        <button
+          onClick={handleBuyNow}
+          className="w-64 py-3 bg-gradient-to-r from-blue-500 to-blue-800 text-white font-bold rounded-lg shadow-md transition-transform transform hover:scale-105"
+        >
+          Comprar
+        </button>
+      </div>
+
       <button
-        onClick={() => addToCart({ ...product, quantity })}
-        className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-lg shadow-md transition-transform transform hover:scale-105" // Ahora los botones son rectangulares
+        onClick={shareProduct} // Llamamos a nuestra función de compartir
+        className="flex items-center space-x-1 text-blue-400 hover:text-pink-500 transition"
       >
-        Agregar al carrito
+        <FaShareAlt />
+        <span>Compartir</span>
       </button>
 
-      <button
-        onClick={handleBuyNow}
-        className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-lg shadow-md transition-transform transform hover:scale-105"
-      >
-        Comprar
+      <button className="flex items-center space-x-1 text-blue-400 hover:text-pink-500 transition mt-2">
+        <FaHeart />
+        <span>Agregar a favoritos</span>
       </button>
     </div>
-
-    <button
-      onClick={handleShare}
-      className="flex items-center space-x-1 text-blue-400 hover:text-pink-500 transition"
-    >
-      <FaShareAlt />
-      <span>Compartir</span>
-    </button>
-
-    <button className="flex items-center space-x-1 text-blue-400 hover:text-pink-500 transition mt-2">
-      <FaHeart />
-      <span>Agregar a favoritos</span>
-    </button>
-  </div>
-);
+  );
+};
 
 ProductInfo.propTypes = {
   product: PropTypes.object.isRequired,
-  quantity: PropTypes.number.isRequired,
-  setQuantity: PropTypes.func.isRequired,
-  addToCart: PropTypes.func.isRequired,
   handleBuyNow: PropTypes.func.isRequired,
-  handleShare: PropTypes.func.isRequired,
 };
 
 export default ProductInfo;
