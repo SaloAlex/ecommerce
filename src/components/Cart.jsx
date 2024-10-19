@@ -5,18 +5,19 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import CartItem from "./CartItem";
 import CartSummary from "./CartSummary";
-import CartActions from "./CartActions";
+import ShippingModal from "./ShippingModal"; // Importamos el modal
+import ShippingCalculator from "./ShippingCalculator"; // Importamos el calculador
 
 const Cart = () => {
   const { cartItems, clearCart, updateQuantity, removeFromCart } = useContext(CartContext);
   const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const [loading, setLoading] = useState(false);
-  const [discountCode, setDiscountCode] = useState("");
+  const [showShippingModal, setShowShippingModal] = useState(false); // Estado para el modal de envío
+  const [shippingCost, setShippingCost] = useState(0); // Estado para el costo de envío
   const navigate = useNavigate();
 
   const handleCheckout = async () => {
     setLoading(true);
-
     try {
       for (const item of cartItems) {
         if (!item.id) {
@@ -67,6 +68,33 @@ const Cart = () => {
     }
   };
 
+  // Función para abrir el modal
+  const handleOpenShippingModal = () => {
+    setShowShippingModal(true);
+  };
+
+  // Función para cerrar el modal
+  const handleCloseShippingModal = () => {
+    setShowShippingModal(false);
+  };
+
+  // Función para calcular el costo de envío
+  const calculateShippingCost = (postalCode) => {
+    const shippingRates = {
+      1000: 300,
+      2000: 400,
+      3000: 500,
+      default: 600,
+    };
+    return shippingRates[postalCode] || shippingRates.default;
+  };
+
+  // Función para aceptar el costo de envío desde el modal
+  const handleShippingAccepted = (cost) => {
+    setShippingCost(cost);
+    setShowShippingModal(false); // Cerrar el modal cuando se acepte el costo de envío
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg max-w-5xl w-full">
@@ -85,36 +113,28 @@ const Cart = () => {
                   onRemove={removeFromCart}
                 />
               ))}
-
-              <div className="mt-6">
-                <p className="text-lg font-semibold text-gray-600 mb-2">
-                  ¿Tenés un código de descuento?
-                </p>
-                <div className="flex">
-                  <input
-                    type="text"
-                    placeholder="Código"
-                    value={discountCode}
-                    onChange={(e) => setDiscountCode(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-700"
-                  />
-                  <button className="ml-2 px-4 py-2 bg-purple-600 text-white font-bold rounded-lg shadow-md hover:bg-purple-700">
-                    Aplicar
-                  </button>
-                </div>
-              </div>
             </div>
 
-            <CartSummary total={total} />
-            <CartActions
+            <CartSummary
+              total={total + shippingCost} // Incluye el costo de envío en el total
               onCheckout={handleCheckout}
-              onClearCart={clearCart}
               loading={loading}
               navigate={navigate}
+              onShippingButtonClick={handleOpenShippingModal} // Nuevo botón para calcular envío
             />
           </div>
         )}
       </div>
+
+      {/* Mostrar el modal si el estado `showShippingModal` está activo */}
+      {showShippingModal && (
+        <ShippingModal onClose={handleCloseShippingModal}>
+          <ShippingCalculator
+            calculateShippingCost={calculateShippingCost}
+            onShippingAccepted={handleShippingAccepted}
+          />
+        </ShippingModal>
+      )}
     </div>
   );
 };

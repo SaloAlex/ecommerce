@@ -35,8 +35,8 @@ const ShippingCalculator = ({ calculateShippingCost, onShippingAccepted }) => {
   };
 
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-md text-gray-100">
-      <h3 className="text-lg font-semibold text-pink-500 mb-2">Calcular envío</h3>
+    <div className="bg-gray-200 p-4 rounded-lg shadow-md text-gray-100">
+      <h3 className="text-lg font-bold text-black  mb-2">Calcular envío</h3>
       <div className="flex items-center space-x-4">
         <input
           type="text"
@@ -47,7 +47,7 @@ const ShippingCalculator = ({ calculateShippingCost, onShippingAccepted }) => {
         />
         <button
           onClick={handleCalculate}
-          className="px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600 transition"
+          className="px-4 py-2 bg-purple-600 text-white font-bold rounded hover:bg-purple-700 transition"
         >
           Calcular
         </button>
@@ -57,17 +57,17 @@ const ShippingCalculator = ({ calculateShippingCost, onShippingAccepted }) => {
 
       {shippingCost !== null && !shippingAccepted && (
         <div className="mt-4">
-          <p className="text-green-500">El costo de envío es: ${shippingCost}</p>
+          <p className="text-black font-semibold">El costo de envío es: ${shippingCost}</p>
           <div className="flex space-x-4 mt-2">
             <button
               onClick={handleAcceptShipping}
-              className="px-4 py-2 bg-green-500 text-white font-bold rounded hover:bg-green-600 transition"
+              className="px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600 transition"
             >
               Aceptar
             </button>
             <button
               onClick={handleCancelShipping}
-              className="px-4 py-2 bg-red-500 text-white font-bold rounded hover:bg-red-600 transition"
+              className="px-4 py-2 bg-purple-600 text-white font-bold rounded hover:bg-purple-700 transition"
             >
               Cancelar
             </button>
@@ -76,7 +76,7 @@ const ShippingCalculator = ({ calculateShippingCost, onShippingAccepted }) => {
       )}
 
       {shippingAccepted && (
-        <p className="text-green-500 mt-2">El costo de envío ha sido añadido al total.</p>
+        <p className="text-black font-semibold mt-2">El costo de envío ha sido añadido al total.</p>
       )}
     </div>
   );
