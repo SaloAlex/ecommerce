@@ -1,12 +1,15 @@
 import { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import axios from "axios";
 import Swal from "sweetalert2";
-import QuantitySelector from "./QuantitySelector"; // Importa el nuevo componente
+import QuantitySelector from "./QuantitySelector";
 
 const Cart = () => {
-  const { cartItems, clearCart, updateQuantity } = useContext(CartContext);
+  const { cartItems, clearCart, updateQuantity, removeFromCart } = useContext(CartContext); // Agregamos removeFromCart
   const [loading, setLoading] = useState(false);
+  const [discountCode, setDiscountCode] = useState("");
+  const navigate = useNavigate();
 
   const handleCheckout = async () => {
     setLoading(true);
@@ -67,96 +70,137 @@ const Cart = () => {
     updateQuantity(id, newQuantity); // Actualiza la cantidad en el contexto
   };
 
+  const handleRemoveItem = (id) => {
+    removeFromCart(id); // Elimina el producto del carrito
+  };
+
   const total = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 p-6">
-      <div className="bg-gray-800 shadow-lg rounded-lg p-10 w-full max-w-2xl">
-        <h2 className="text-4xl font-bold text-pink-500 neon-effect mb-6">
-          Carrito de Compras
-        </h2>
-        <div className="mb-6">
-          {cartItems.length === 0 ? (
-            <p className="text-white text-xl">
-              No hay productos en el carrito.
-            </p>
-          ) : (
-            cartItems.map((item) => (
-              <div key={item.id} className="mb-6">
-                <p className="text-2xl font-semibold text-blue-400">
-                  {item.name}
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-5xl w-full">
+        <h2 className="text-3xl font-bold text-black mb-6">Mi carrito</h2>
+
+        {cartItems.length === 0 ? (
+          <p className="text-gray-700 text-xl">No hay productos en el carrito.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Columna de productos */}
+            <div className="col-span-2">
+              {cartItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between border-b border-gray-300 py-4"
+                >
+                  <div className="flex items-center">
+                    <img
+                      src={item.imageUrls ? item.imageUrls[0] : ""}
+                      alt={`Imagen de ${item.name}`}
+                      className="w-24 h-24 object-cover rounded-md mr-4"
+                    />
+                    <div>
+                      <p className="text-xl font-semibold text-black">
+                        {item.name}
+                      </p>
+                      <button
+                        onClick={() => handleRemoveItem(item.id)} // Función para eliminar el producto
+                        className="text-sm text-blue-500 hover:underline"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-lg text-gray-600">
+                    <QuantitySelector
+                      productId={item.id}
+                      initialQuantity={item.quantity}
+                      onQuantityChange={(newQuantity) =>
+                        handleQuantityChange(item.id, newQuantity)
+                      }
+                    />
+                  </div>
+                  <div className="text-lg text-black font-semibold">
+                    ${item.price}
+                  </div>
+                </div>
+              ))}
+
+              {/* Sección para el código de descuento */}
+              <div className="mt-6">
+                <p className="text-lg font-semibold text-gray-600 mb-2">
+                  ¿Tenés un código de descuento?
                 </p>
-                <p className="text-lg text-gray-300">
-                  Precio unitario: ${item.price}
-                </p>
-                <QuantitySelector
-                  productId={item.id}
-                  initialQuantity={item.quantity}
-                  onQuantityChange={(newQuantity) =>
-                    handleQuantityChange(item.id, newQuantity)
-                  }
-                />
-                <p className="text-lg text-gray-300">
-                  Subtotal: ${item.price * item.quantity}
-                </p>
-                {item.imageUrls && item.imageUrls.length > 0 && (
-                  <img
-                    src={item.imageUrls[0]}
-                    alt={`Imagen de ${item.name}`}
-                    className="w-28 h-28 object-cover rounded-md mt-3"
+                <div className="flex">
+                  <input
+                    type="text"
+                    placeholder="Código"
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-700"
                   />
-                )}
+                  <button className="ml-2 px-4 py-2 bg-purple-600 text-white font-bold rounded-lg shadow-md hover:bg-purple-700">
+                    Aplicar
+                  </button>
+                </div>
               </div>
-            ))
-          )}
-        </div>
+            </div>
 
-        <p className="text-2xl font-bold text-blue-400 mb-6">
-          Total a pagar: ${total}
-        </p>
+            {/* Columna de resumen */}
+            <div className="col-span-1 bg-gray-100 p-6 rounded-lg shadow-md">
+              <p className="text-lg font-bold text-black mb-4">Resumen</p>
+              <div className="text-lg flex justify-between">
+                <span className="text-gray-600">Subtotal:</span>
+                <span className="text-black">${total}</span>
+              </div>
 
-        <div className="flex space-x-6">
-          <button
-            onClick={handleCheckout}
-            className={`w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-bold rounded-full shadow-md ${
-              loading
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:from-pink-600 hover:to-purple-600 transition-transform transform hover:scale-105"
-            }`}
-            disabled={loading}
-          >
-            {loading ? "Procesando..." : "Pagar ahora"}
-          </button>
-
-          <button
-            onClick={() => {
-              Swal.fire({
-                title: "¿Estás seguro?",
-                text: "Esta acción vaciará tu carrito.",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Sí, vaciar carrito",
-              }).then((result) => {
-                if (result.isConfirmed) {
-                  clearCart();
-                  Swal.fire(
-                    "Carrito vacío",
-                    "Tu carrito ha sido vaciado.",
-                    "success"
-                  );
-                }
-              });
-            }}
-            className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-full shadow-md hover:from-red-600 hover:to-red-700 transition-transform transform hover:scale-105"
-          >
-            Vaciar carrito
-          </button>
-        </div>
+              <div className="mt-4">
+                <button
+                  onClick={handleCheckout}
+                  className={`w-full py-3 bg-purple-600 text-white font-bold rounded-lg shadow-md hover:bg-purple-700 ${
+                    loading ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={loading}
+                >
+                  {loading ? "Procesando..." : "Finalizar compra"}
+                </button>
+                <button
+                  onClick={() => {
+                    Swal.fire({
+                      title: "¿Estás seguro?",
+                      text: "Esta acción vaciará tu carrito.",
+                      icon: "warning",
+                      showCancelButton: true,
+                      confirmButtonColor: "#3085d6",
+                      cancelButtonColor: "#d33",
+                      confirmButtonText: "Sí, vaciar carrito",
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        clearCart();
+                        Swal.fire(
+                          "Carrito vacío",
+                          "Tu carrito ha sido vaciado.",
+                          "success"
+                        );
+                      }
+                    });
+                  }}
+                  className="w-full mt-2 py-3 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600"
+                >
+                  Vaciar carrito
+                </button>
+                <button
+                  onClick={() => navigate("/")} // Navegar a la página de inicio
+                  className="w-full mt-2 py-3 border border-black bg-gray-200 text-black font-bold rounded-lg shadow-md hover:bg-gray-300"
+                >
+                  Continuar comprando
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -6,21 +6,19 @@ export const CartContext = createContext();
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
     try {
-      // Intenta cargar los productos del carrito desde localStorage
       const storedCart = localStorage.getItem('cartItems');
       return storedCart ? JSON.parse(storedCart) : [];
     } catch (error) {
-      console.error("Error al cargar el carrito desde localStorage:", error);
+      console.error('Error al cargar el carrito desde localStorage:', error);
       return [];
     }
   });
 
   useEffect(() => {
     try {
-      // Guarda el carrito en localStorage cada vez que cambia
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
     } catch (error) {
-      console.error("Error al guardar el carrito en localStorage:", error);
+      console.error('Error al guardar el carrito en localStorage:', error);
     }
   }, [cartItems]);
 
@@ -28,19 +26,15 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.id === product.id);
+      const quantityToAdd = product.quantity || 1; 
       if (existingItem) {
         return prevItems.map((item) =>
           item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + product.quantity,
-                shippingCost: product.shippingCost,
-                totalCost: product.totalCost,
-              }
+            ? { ...item, quantity: item.quantity + quantityToAdd }
             : item
         );
       } else {
-        return [...prevItems, { ...product }];
+        return [...prevItems, { ...product, quantity: quantityToAdd }];
       }
     });
   };
@@ -54,20 +48,24 @@ export const CartProvider = ({ children }) => {
     );
   };
 
+  // Función para eliminar un producto del carrito
+  const removeFromCart = (id) => {
+    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  };
+
   // Función para vaciar el carrito
   const clearCart = () => {
-    setCartItems([]); // Limpia el estado
-    localStorage.removeItem('cartItems'); // Elimina del localStorage
+    setCartItems([]); 
+    localStorage.removeItem('cartItems');
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ cartItems, addToCart, updateQuantity, removeFromCart, clearCart }}>
       {children}
     </CartContext.Provider>
   );
 };
 
-// Validación de PropTypes para el CartProvider
 CartProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };

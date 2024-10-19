@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import { getAuth } from "firebase/auth";
 import ProductImageGallery from "./ProductImageGallery";
 import ProductRating from "./ProductRating";
-import ProductInfo from "./ProductInfo"; // Importar ProductInfo
+import ProductInfo from "./ProductInfo";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -56,6 +56,7 @@ const ProductDetail = () => {
       return;
     }
 
+    // Solo añade la cantidad actual al carrito
     addToCart({ ...product, quantity });
     navigate("/cart");
   };
@@ -100,26 +101,23 @@ const ProductDetail = () => {
 
   return (
     <div className="container mx-auto p-8 max-w-7xl">
-      {/* Estructura de grid ajustada para hacer más grande cada componente */}
       <div className="bg-white p-8 rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-2 gap-16">
-        
         {/* Columna izquierda - Galería de imágenes */}
         <div className="md:col-span-1">
           <ProductImageGallery
             imageUrls={product.imageUrls}
             selectedImage={selectedImage}
             onSelectImage={setSelectedImage}
-            className="w-full h-full object-cover" // Aumenta el tamaño de la imagen
+            className="w-full h-full object-cover"
           />
         </div>
 
-        {/* Columna derecha - Información del producto, con borde, sombra y separación */}
-        <div className="md:col-span-1 ml-8 border border-gray-300 p-4 rounded-lg shadow-lg ">
+        {/* Columna derecha - Información del producto */}
+        <div className="md:col-span-1 border border-gray-300 p-6 rounded-lg shadow-xl bg-white">
           <ProductInfo
             product={product}
             quantity={quantity}
             setQuantity={setQuantity} // Permitir cambiar la cantidad
-            addToCart={addToCart}
             handleBuyNow={handleBuyNow}
             handleShare={() => Swal.fire("Compartir", "¡Producto compartido!", "info")}
           />

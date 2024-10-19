@@ -66,9 +66,9 @@ const QuantitySelector = ({ productId = '', initialQuantity = 1, onQuantityChang
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center border border-gray-300 rounded-lg p-2 w-max">
       <button
-        className="bg-blue-500 text-white px-2 py-1 rounded-l"
+        className="text-purple-600 px-3 py-1 text-xl font-bold hover:text-pink-500"
         onClick={handleDecrease}
         disabled={quantity === 1}
       >
@@ -76,13 +76,12 @@ const QuantitySelector = ({ productId = '', initialQuantity = 1, onQuantityChang
       </button>
       <span className="px-4 text-lg">{quantity}</span>
       <button
-        className="bg-blue-500 text-white px-2 py-1 rounded-r"
+        className="text-purple-600 px-3 py-1 text-xl font-bold hover:text-pink-500"
         onClick={handleIncrease}
         disabled={quantity === stock || stock === 0} // Desactiva si el stock es 0
       >
         +
       </button>
-      <p className="text-sm text-gray-500 ml-4">Stock disponible: {stock}</p>
     </div>
   );
 };
