@@ -54,8 +54,14 @@ const ProductDetail = () => {
   const hasUserRated = product.ratedBy?.includes(currentUser?.uid);
 
   const handleBuyNow = () => {
-    const totalCost = product.price + shippingCost;
+    if (!product.id) {
+      console.error('Error: El producto no tiene un ID válido.');
+      return;
+    }
+  
+    const totalCost = Number(product.price) + Number(shippingCost);
     addToCart({ ...product, quantity, shippingCost, totalCost });
+  
     navigate("/cart");
   };
 
