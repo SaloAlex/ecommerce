@@ -57,7 +57,7 @@ const ShippingCalculator = ({ calculateShippingCost, onShippingAccepted }) => {
 
       {shippingCost !== null && !shippingAccepted && (
         <div className="mt-4">
-          <p className="text-black font-semibold">El costo de envío es: ${shippingCost}</p>
+          <p className="text-black font-semibold ">El costo de envío es: ${shippingCost}</p>
           <div className="flex space-x-4 mt-2">
             <button
               onClick={handleAcceptShipping}

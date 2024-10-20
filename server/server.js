@@ -1,14 +1,13 @@
 import express from 'express';
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 import cors from 'cors';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
-import { db } from '../src/firebase/firebaseConfig.js'; // Asegúrate de que Firebase esté configurado
+import { generateDiscountCode, validateDiscountCode } from './discountController.js'; // Importa el controlador
 
 const app = express();
 const port = 3000;
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'http://localhost:5173', // Asegúrate que este sea el origen correcto de tu frontend
   methods: ['GET', 'POST'],
 }));
 
@@ -21,12 +20,10 @@ app.use(express.json());
 // Endpoint para crear la preferencia de pago
 app.post('/create_preference', async (req, res) => {
   try {
-    console.log('Received request body:', req.body);
-
     const { items } = req.body;
     
     if (!Array.isArray(items) || items.length === 0) {
-      throw new Error('Invalid items array');
+      return res.status(400).json({ error: 'Invalid items array' });
     }
 
     const preference = new Preference(client);
@@ -46,10 +43,8 @@ app.post('/create_preference', async (req, res) => {
       }
     });
 
-    console.log('Preference created successfully:', result);
     res.json({ id: result.id });
   } catch (error) {
-    console.error('Error creating preference:', error);
     res.status(500).json({ 
       error: 'Error al crear la preferencia',
       details: error.message,
@@ -58,54 +53,35 @@ app.post('/create_preference', async (req, res) => {
   }
 });
 
-// Endpoint para Webhook (notificaciones de Mercado Pago)
-app.post('/webhook', async (req, res) => {
+// Endpoint para generar códigos de descuento
+app.post('/generate_discount', async (req, res) => {
+  const { code, discountValue, expirationDate } = req.body;
+  
   try {
-    const { data } = req.body;
-    const paymentId = data.id; // ID del pago que se puede usar para verificar el estado
-
-    // Llamada a la API de Mercado Pago para obtener detalles del pago
-    const paymentInfo = await client.payment.findById(paymentId);
-
-    const paymentStatus = paymentInfo.body.status;
-
-    if (paymentStatus === 'approved') {
-      const items = req.body.items || [];
-
-      for (const item of items) {
-        const productRef = doc(db, 'products', item.id);
-        const productSnap = await getDoc(productRef);
-
-        if (productSnap.exists()) {
-          const currentStock = productSnap.data().stock;
-          const newStock = currentStock - item.quantity;
-
-          if (newStock >= 0) {
-            await updateDoc(productRef, { stock: newStock });
-            console.log(`Stock actualizado para el producto ${item.title}: ${newStock}`);
-          } else {
-            console.error(`Stock insuficiente para el producto ${item.title}`);
-          }
-        } else {
-          console.error(`Producto con id ${item.id} no encontrado.`);
-        }
-      }
-    }
-
-    res.sendStatus(200); // Confirmar recepción exitosa del webhook
+    await generateDiscountCode(code, discountValue, new Date(expirationDate));
+    res.status(200).json({ message: 'Código de descuento generado con éxito' });
   } catch (error) {
-    console.error('Error procesando el webhook:', error);
-    res.status(500).json({
-      error: 'Error procesando el webhook',
-      details: error.message,
+    res.status(500).json({ 
+      error: 'Error al generar el código de descuento', 
+      details: error.message 
     });
   }
 });
 
-// Endpoints para el redireccionamiento después del pago
-app.get('/success', (req, res) => res.send("Pago exitoso"));
-app.get('/failure', (req, res) => res.send("Pago fallido"));
-app.get('/pending', (req, res) => res.send("Pago pendiente"));
+// Endpoint para validar un código de descuento
+app.post('/validate_discount', async (req, res) => {
+  const { code } = req.body;
+  
+  try {
+    const discountValue = await validateDiscountCode(code);
+    res.status(200).json({ discountValue });
+  } catch (error) {
+    res.status(400).json({ 
+      error: 'Error al validar el código de descuento', 
+      details: error.message 
+    });
+  }
+});
 
 // Iniciar el servidor
 app.listen(port, () => {

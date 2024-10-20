@@ -8,6 +8,7 @@ import Header from './components/Header'; // Importar el Header
 import Login from './components/Login'; // Importar el componente Login
 import Register from './components/Register'; // Importar el componente Register
 import { CartProvider } from './context/CartContext'; // Importa el contexto del carrito
+import GenerateDiscountCode from './components/GenerateDiscountCode'; // Importa el componente para generar código de descuento
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/login" element={<Login />} /> {/* Ruta para el login */}
               <Route path="/register" element={<Register />} /> {/* Ruta para el registro */}
+              <Route path="/generate-discount" element={<GenerateDiscountCode />} /> {/* Nueva ruta para generar código de descuento */}
             </Routes>
           </div>
           <Footer />
