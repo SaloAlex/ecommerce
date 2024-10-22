@@ -7,7 +7,7 @@ const CategoryNavbar = ({ categories, onCategorySelect }) => {
         
         {/* Texto a la izquierda */}
         <h2 className="text-4xl font-bold text-blue-900">
-          ¡Nuestros <span className="text-pink-500 bg-gray-800 px-2 py-1 rounded">productos!</span>
+          ¡Nuestros <span className="text-white bg-gray-800 px-2 py-1 rounded">productos!</span>
         </h2>
         
         {/* Categorías a la derecha con fondo gris */}

@@ -33,10 +33,6 @@ const ProductList = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="text-4xl font-bold text-pink-500 neon-effect mb-6 text-center">
-        Productos Disponibles
-      </h2>
-
       {/* Navbar de categorías */}
       <CategoryNavbar categories={categories} onCategorySelect={handleCategorySelect} />
 
