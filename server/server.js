@@ -7,7 +7,7 @@ const app = express();
 const port = 3000;
 
 app.use(cors({
-  origin: 'http://localhost:5173', // Asegúrate que este sea el origen correcto de tu frontend
+  origin: ['http://localhost:5173', 'https://ecommerce-8cjaz03ew-alexsalos-projects.vercel.app'], // Asegúrate que este sea el origen correcto de tu frontend
   methods: ['GET', 'POST'],
 }));
 
