@@ -12,7 +12,9 @@ const app = express();
 const port = config.server.port;
 
 // Middlewares de seguridad y optimización
-app.use(helmet()); // Añade headers de seguridad
+app.use(helmet({
+  crossOriginOpenerPolicy: false // Desactivar COOP para evitar bloqueos con window.close()
+})); // Añade headers de seguridad
 app.use(morgan('dev')); // Logging en desarrollo
 app.use(compression()); // Compresión de respuestas
 app.use(express.json()); // Parser para JSON
