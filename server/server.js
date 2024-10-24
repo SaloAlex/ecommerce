@@ -19,9 +19,9 @@ app.use(express.json()); // Parser para JSON
 
 // Configuración de CORS
 app.use(cors({
-  origin: config.cors.origins,
+  origin: ['http://localhost:5173', 'https://tecnomas.netlify.app'],
   methods: ['GET', 'POST'],
-  credentials: true
+  credentials: true // Si usas `credentials: true`, no puedes usar `*` como `origin`, pero puedes permitir todos los dominios de otra manera.
 }));
 
 // Configuración de Mercado Pago

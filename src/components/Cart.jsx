@@ -39,7 +39,7 @@ const Cart = () => {
       }));
 
       const response = await axios.post(
-        "http://localhost:3001/create_preference", // Asegúrate de que esta URL sea correcta
+        "http://localhost:3001/create_preference, https://tecnomas.netlify.app", // Asegúrate de que esta URL sea correcta
         { items }
       );
 
